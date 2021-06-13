@@ -23,28 +23,20 @@ const download = (fileName, blob) => {
   URL.revokeObjectURL(link.href);
 };
 
-const $pdfDownload = document.getElementById('pdfDownload');
-const $videoDownload = document.getElementById('videoDownload');
-const $imageDownload = document.getElementById('imageDownload');
+const getEleById = (id) => document.getElementById(id);
+const downloadFile = (dom, url) => {
+  dom.addEventListener('click', (event) => {
+    event.preventDefault();
 
-$pdfDownload.addEventListener('click', (event) => {
-  event.preventDefault();
-  GET('/assets/des.pdf', (blob) => {
-    download('des.pdf', blob);
+    const filename = url.split('/')[2];
+    GET(url, (blob) => {
+      download(filename, blob);
+    });
   });
-});
+};
 
-$imageDownload.addEventListener('click', (event) => {
-  event.preventDefault();
-  GET('/assets/des.jpeg', (blob) => {
-    download('des.jpeg', blob);
-  });
-});
-
-$videoDownload.addEventListener('click', (event) => {
-  event.preventDefault();
-  GET('/assets/mov_bbb.mp4', (blob) => {
-    console.log(blob);
-    download('mov_bbb.mp4', blob);
-  });
-});
+downloadFile(getEleById('pdfDownload'), '/assets/des.pdf');
+downloadFile(getEleById('videoDownload'), '/assets/des.jpeg');
+downloadFile(getEleById('imageDownload'), '/assets/des.pdf');
+downloadFile(getEleById('videoDownload2'), '/assets/mov_bbb.m4v');
+downloadFile(getEleById('videoDownload3'), '/assets/mov_bbb.mov');
