@@ -23,20 +23,8 @@ const download = (fileName, blob) => {
   URL.revokeObjectURL(link.href);
 };
 
-const getEleById = (id) => document.getElementById(id);
-const downloadFile = (dom, url) => {
-  dom.addEventListener('click', (event) => {
-    event.preventDefault();
-
-    const filename = url.split('/')[2];
-    GET(url, (blob) => {
-      download(filename, blob);
-    });
+const downloadFile = (filename) => {
+  GET(`assets/${filename}`, (blob) => {
+    download(filename, blob);
   });
 };
-
-downloadFile(getEleById('pdfDownload'), '/assets/des.pdf');
-downloadFile(getEleById('videoDownload'), '/assets/des.jpeg');
-downloadFile(getEleById('imageDownload'), '/assets/des.pdf');
-downloadFile(getEleById('videoDownload2'), '/assets/mov_bbb.m4v');
-downloadFile(getEleById('videoDownload3'), '/assets/mov_bbb.mov');
