@@ -13,7 +13,7 @@ const errorHandler = (err) => {
 };
 
 /* GET home page. */
-router.get('/', (req, res, next) => {
+router.get('/', (req, res) => {
   res.render('index', { title: 'Express' });
 });
 
@@ -45,16 +45,18 @@ router.post('/makefile', (req, res) => {
       const content = fs.readFileSync(file);
       try {
         fs.accessSync(path, fs.constants.F_OK);
-        fs.appendFile(path, content, (err) => {
+        fs.appendFile(path, content, () => {
           fs.unlink(file, errorHandler);
+          if (i === chunks - 1) {
+            res.json({ code: 200, message: 'upload success!' });
+          }
         });
       } catch (err) {
-        fs.writeFile(path, content, { flag: 'w+' }, (err) => {
+        fs.writeFile(path, content, { flag: 'w+' }, () => {
           fs.unlink(file, errorHandler);
         });
       }
     }
-    res.json({ code: 200, message: 'upload success!' });
   } catch (err) {
     res.json({ code: 500, message: 'upload failed!' });
     res.status(500);
