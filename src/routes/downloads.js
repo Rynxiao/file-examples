@@ -1,7 +1,7 @@
 const path = require('path');
 const fs = require('fs');
 const express = require('express');
-const { Messages, logger, modules, actions } = require('../src/helpers');
+const { Messages, logger, modules, actions } = require('../helpers');
 
 const router = express.Router();
 const filesPath = path.join(__dirname, '..', '/public/uploads');

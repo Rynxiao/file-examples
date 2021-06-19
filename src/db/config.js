@@ -1,6 +1,6 @@
 module.exports = {
   HOST: 'localhost',
-  USER: 'user',
-  PASSWORD: 'password',
+  USER: 'root',
+  PASSWORD: 'pwd123',
   DATABASE: 'files_examples',
 };
