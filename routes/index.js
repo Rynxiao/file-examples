@@ -4,7 +4,7 @@ const fsPromises = require('fs/promises');
 const express = require('express');
 const router = express.Router();
 const multer = require('multer');
-const uploadPath = path.join(__dirname, '..', '/uploads');
+const uploadPath = path.join(__dirname, '..', '/public/uploads');
 const uploadTmp = path.join(uploadPath, 'tmp');
 const upload = multer({ dest: uploadTmp });
 
