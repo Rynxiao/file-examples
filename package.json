@@ -3,7 +3,9 @@
   "version": "0.0.0",
   "private": true,
   "scripts": {
-    "start": "node ./bin/www"
+    "start": "node ./bin/www",
+    "db:start": "./scripts/start-db.sh",
+    "db:stop": "./scripts/stop-db.sh"
   },
   "dependencies": {
     "cookie-parser": "~1.4.4",
