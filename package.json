@@ -15,8 +15,9 @@
     "log4js": "^6.3.0",
     "morgan": "~1.9.1",
     "multer": "^1.4.2",
-    "mysql": "^2.18.1",
-    "rotating-file-stream": "^2.1.5"
+    "mysql2": "^2.2.5",
+    "rotating-file-stream": "^2.1.5",
+    "sequelize": "^6.6.2"
   },
   "devDependencies": {
     "prettier": "2.3.1"

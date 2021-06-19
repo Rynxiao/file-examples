@@ -3,7 +3,7 @@ const fs = require('fs');
 const fsPromises = require('fs/promises');
 const express = require('express');
 const multer = require('multer');
-const { Messages, logger, modules, actions } = require('../src/helpers');
+const { Messages, logger, modules, actions } = require('../helpers');
 
 const router = express.Router();
 const uploadPath = path.join(__dirname, '..', '/public/uploads');

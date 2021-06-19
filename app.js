@@ -7,7 +7,6 @@ const logger = require('morgan');
 const rfs = require('rotating-file-stream');
 
 const indexRouter = require('./src/routes/index');
-const usersRouter = require('./src/routes/users');
 const downloadsRouter = require('./src/routes/downloads');
 
 const app = express();
@@ -37,7 +36,6 @@ app.use(lessMiddleware(path.join(__dirname, 'public')));
 app.use(express.static(path.join(__dirname, 'public')));
 
 app.use('/', indexRouter);
-app.use('/users', usersRouter);
 app.use('/downloads', downloadsRouter);
 
 // catch 404 and forward to error handler
