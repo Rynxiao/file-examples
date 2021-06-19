@@ -16,18 +16,14 @@ const app = express();
 app.set('views', path.join(__dirname, 'views'));
 app.set('view engine', 'ejs');
 
-// log only 4xx and 5xx responses to console
-app.use(
-  logger('dev', {
-    skip: function (req, res) {
-      return res.statusCode < 400;
-    },
-  })
-);
+app.use(logger('dev'));
 
 // log file rotation
 app.use(
   logger('combined', {
+    skip: function (req, res) {
+      return res.statusCode < 400;
+    },
     stream: rfs.createStream('/access.log', {
       interval: '1d', // rotate daily
       path: path.join(__dirname, 'logs'),
