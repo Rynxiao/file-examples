@@ -1,7 +1,7 @@
-const sequelize = require('..');
 const { DataTypes } = require('sequelize');
 
-const Upload = sequelize.define('Upload', {
+const TABLE_NAME = 'Upload';
+const attributes = {
   name: {
     type: DataTypes.STRING,
     allowNull: false,
@@ -14,7 +14,6 @@ const Upload = sequelize.define('Upload', {
     type: DataTypes.BOOLEAN,
     defaultValue: false,
   },
-});
+};
 
-Upload.sync();
-module.exports = Upload;
+module.exports = (sequelize) => sequelize.define(TABLE_NAME, attributes);

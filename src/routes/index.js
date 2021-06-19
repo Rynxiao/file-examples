@@ -4,9 +4,10 @@ const fsPromises = require('fs/promises');
 const express = require('express');
 const multer = require('multer');
 const { Messages, logger, modules, actions } = require('../helpers');
+const db = require('../db');
 
 const router = express.Router();
-const uploadPath = path.join(__dirname, '..', '/public/uploads');
+const uploadPath = path.join(__dirname, '..', '../public/uploads');
 const uploadTmp = path.join(uploadPath, 'tmp');
 const upload = multer({ dest: uploadTmp });
 
@@ -26,10 +27,12 @@ router.post('/upload', upload.any(), async (req, res) => {
     const chunkName = `${chunkIndex}.${fileHash}.chunk`;
 
     await fsPromises.rename(path, `${destination}/${chunkName}`);
+    await db.Chunk.create({ name: chunkName, sum: fileHash, completed: true });
     logger.info(Messages.success(modules.UPLOAD, actions.UPLOAD, chunkName));
-    res.json({ code: 200 });
-  } catch (e) {
-    res.json({ code: 500, message: e.message });
+    res.json({ code: 200, message: Messages.success(modules.UPLOAD, actions.UPLOAD, chunkName) });
+  } catch (err) {
+    logger.info(Messages.fail(modules.UPLOAD, actions.UPLOAD, path));
+    res.json({ code: 500, message: Messages.fail(modules.UPLOAD, actions.UPLOAD, path) });
     res.status(500);
   }
 });
@@ -51,7 +54,7 @@ router.post('/makefile', async (req, res) => {
         logger.info(Messages.success(modules.UPLOAD, actions.DELETE, `chunk ${file}`));
         if (i === chunks - 1) {
           logger.info(Messages.success(modules.UPLOAD, actions.UPLOAD, filename));
-          res.json({ code: 200, message: `file ${filename} upload success!` });
+          res.json({ code: 200, message: Messages.success(modules.UPLOAD, actions.UPLOAD, filename) });
         }
       } catch (err) {
         logger.info(Messages.info(modules.UPLOAD, actions.CREATE, path, `File ${path} not exists, `));
@@ -62,7 +65,7 @@ router.post('/makefile', async (req, res) => {
   } catch (err) {
     res.status(500);
     logger.info(Messages.fail(modules.UPLOAD, actions.UPLOAD, filename));
-    res.json({ code: 500, message: `file ${filename} upload failed!` });
+    res.json({ code: 500, message: Messages.fail(modules.UPLOAD, actions.UPLOAD, filename) });
   }
 });
 

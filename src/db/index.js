@@ -1,11 +1,36 @@
 const { Sequelize } = require('sequelize');
+const mysql = require('mysql2/promise');
 const config = require('./config');
 const { logger, Messages, actions, modules } = require('../helpers');
 
-const sequelize = new Sequelize(config.DATABASE, config.USER, config.PASSWORD, {
-  host: config.HOST,
-  dialect: 'mysql',
-  logging: (msg) => logger.debug(Messages.info(modules.DB, actions.CONNECT, msg)),
-});
+module.exports = db = {};
 
-module.exports = sequelize;
+const initialize = async () => {
+  // create db if it doesn't already exist
+  const { DATABASE, USER, PASSWORD, HOST } = config;
+  const connection = await mysql.createConnection({ host: HOST, user: USER, password: PASSWORD });
+  try {
+    await connection.query(`CREATE DATABASE IF NOT EXISTS ${DATABASE};`);
+  } catch (err) {
+    logger.error(Messages.fail(modules.DB, actions.CONNECT, `create database ${DATABASE}`));
+    throw err;
+  }
+
+  // connect to db
+  const sequelize = new Sequelize(DATABASE, USER, PASSWORD, {
+    host: HOST,
+    dialect: 'mysql',
+    logging: (msg) => logger.debug(Messages.info(modules.DB, actions.CONNECT, msg)),
+  });
+
+  // init models and add them to the exported db object
+  db.Upload = require('./models/upload')(sequelize);
+  db.Chunk = require('./models/chunk')(sequelize);
+
+  // sync all models with database
+  await sequelize.sync();
+};
+
+initialize().then(() => {
+  logger.info(Messages.info(modules.DB, actions.CONNECT, 'database connect successfully!'));
+});

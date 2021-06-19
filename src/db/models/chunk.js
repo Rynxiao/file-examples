@@ -1,7 +1,7 @@
-const sequelize = require('..');
 const { DataTypes } = require('sequelize');
 
-const Chunk = sequelize.define('Chunk', {
+const TABLE_NAME = 'Chunk';
+const attributes = {
   name: {
     type: DataTypes.STRING,
     allowNull: false,
@@ -18,7 +18,6 @@ const Chunk = sequelize.define('Chunk', {
     type: DataTypes.BOOLEAN,
     defaultValue: false,
   },
-});
+};
 
-Chunk.sync();
-module.exports = Chunk;
+module.exports = (sequelize) => sequelize.define(TABLE_NAME, attributes);
