@@ -1,21 +1,39 @@
-var createError = require('http-errors');
-var express = require('express');
-var path = require('path');
-var cookieParser = require('cookie-parser');
-var lessMiddleware = require('less-middleware');
-var logger = require('morgan');
+const createError = require('http-errors');
+const express = require('express');
+const path = require('path');
+const cookieParser = require('cookie-parser');
+const lessMiddleware = require('less-middleware');
+const logger = require('morgan');
+const rfs = require('rotating-file-stream');
 
-var indexRouter = require('./routes/index');
-var usersRouter = require('./routes/users');
-var downloadsRouter = require('./routes/downloads');
+const indexRouter = require('./routes/index');
+const usersRouter = require('./routes/users');
+const downloadsRouter = require('./routes/downloads');
 
-var app = express();
+const app = express();
 
 // view engine setup
 app.set('views', path.join(__dirname, 'views'));
 app.set('view engine', 'ejs');
 
-app.use(logger('dev'));
+// log only 4xx and 5xx responses to console
+app.use(
+  logger('dev', {
+    skip: function (req, res) {
+      return res.statusCode < 400;
+    },
+  })
+);
+
+// log file rotation
+app.use(
+  logger('combined', {
+    stream: rfs.createStream('/access.log', {
+      interval: '1d', // rotate daily
+      path: path.join(__dirname, 'logs'),
+    }),
+  })
+);
 app.use(express.json());
 app.use(express.urlencoded({ extended: false }));
 app.use(cookieParser());
