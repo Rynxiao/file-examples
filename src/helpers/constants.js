@@ -1,6 +1,7 @@
 const modules = {
   DOWNLOAD: 'DOWNLOAD',
   UPLOAD: 'UPLOAD',
+  DB: 'DB',
 };
 
 const actions = {
@@ -10,6 +11,7 @@ const actions = {
   GET: 'Get',
   DOWNLOAD: 'Download',
   UPLOAD: 'Upload',
+  CONNECT: 'Connect',
 };
 
 module.exports = {
