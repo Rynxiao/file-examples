@@ -31,8 +31,8 @@ router.post('/upload', upload.any(), async (req, res) => {
     logger.info(Messages.success(modules.UPLOAD, actions.UPLOAD, chunkName));
     res.json({ code: 200, message: Messages.success(modules.UPLOAD, actions.UPLOAD, chunkName) });
   } catch (err) {
-    logger.info(Messages.fail(modules.UPLOAD, actions.UPLOAD, path));
-    res.json({ code: 500, message: Messages.fail(modules.UPLOAD, actions.UPLOAD, path) });
+    logger.error(Messages.fail(modules.UPLOAD, actions.UPLOAD, err.message));
+    res.json({ code: 500, message: Messages.fail(modules.UPLOAD, actions.UPLOAD, err.message) });
     res.status(500);
   }
 });
@@ -64,8 +64,8 @@ router.post('/makefile', async (req, res) => {
     }
   } catch (err) {
     res.status(500);
-    logger.info(Messages.fail(modules.UPLOAD, actions.UPLOAD, filename));
-    res.json({ code: 500, message: Messages.fail(modules.UPLOAD, actions.UPLOAD, filename) });
+    logger.info(Messages.fail(modules.UPLOAD, actions.UPLOAD, err.message));
+    res.json({ code: 500, message: Messages.fail(modules.UPLOAD, actions.UPLOAD, err.message) });
   }
 });
 
