@@ -6,14 +6,14 @@ const lessMiddleware = require('less-middleware');
 const logger = require('morgan');
 const rfs = require('rotating-file-stream');
 
-const indexRouter = require('./routes/index');
-const usersRouter = require('./routes/users');
-const downloadsRouter = require('./routes/downloads');
+const indexRouter = require('./src/routes/index');
+const usersRouter = require('./src/routes/users');
+const downloadsRouter = require('./src/routes/downloads');
 
 const app = express();
 
 // view engine setup
-app.set('views', path.join(__dirname, 'views'));
+app.set('views', path.join(__dirname, 'src/views'));
 app.set('view engine', 'ejs');
 
 app.use(logger('dev'));

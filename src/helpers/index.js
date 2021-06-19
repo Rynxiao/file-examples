@@ -1,4 +1,5 @@
-const { modules } = require('./constants');
+const { modules, actions } = require('./constants');
+const logger = require('./logger');
 
 const buildLoggerMessage = (moduleName, action, message, additional) => {
   const typeText = additional.type ? ` ${additional.type}` : '';
@@ -12,4 +13,4 @@ const Messages = {
   info: (moduleName, action, message, pre) => buildLoggerMessage(moduleName, action, message, { pre }),
 };
 
-module.exports = { Messages };
+module.exports = { Messages, modules, actions, logger };
