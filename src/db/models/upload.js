@@ -1,13 +1,23 @@
-const { DataTypes } = require('sequelize');
+const { Sequelize, DataTypes } = require('sequelize');
 
 const TABLE_NAME = 'Upload';
 const attributes = {
+  id: {
+    primaryKey: true,
+    allowNull: false,
+    type: Sequelize.UUID,
+    defaultValue: Sequelize.UUIDV4,
+  },
   name: {
     type: DataTypes.STRING,
     allowNull: false,
   },
-  sum: {
+  checksum: {
     type: DataTypes.STRING,
+    allowNull: false,
+  },
+  chunks: {
+    type: DataTypes.INTEGER,
     allowNull: false,
   },
   isDeleted: {
@@ -16,4 +26,8 @@ const attributes = {
   },
 };
 
-module.exports = (sequelize) => sequelize.define(TABLE_NAME, attributes);
+const options = {
+  indexes: [{ unique: true, fields: ['checksum'] }],
+};
+
+module.exports = (sequelize) => sequelize.define(TABLE_NAME, attributes, options);

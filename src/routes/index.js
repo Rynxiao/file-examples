@@ -22,12 +22,12 @@ router.post('/upload', upload.any(), async (req, res) => {
   const path = file.path;
 
   try {
-    const fileHash = req.body.fileHash;
-    const chunkIndex = req.body.chunkIndex;
-    const chunkName = `${chunkIndex}.${fileHash}.chunk`;
+    const checksum = req.body.checksum;
+    const chunkId = req.body.chunkId;
+    const chunkName = `${chunkId}.${checksum}.chunk`;
 
     await fsPromises.rename(path, `${destination}/${chunkName}`);
-    await db.Chunk.create({ name: chunkName, sum: fileHash, completed: true });
+    await db.Chunk.create({ name: chunkName, completed: true, chunkId, chunksum });
     logger.info(Messages.success(modules.UPLOAD, actions.UPLOAD, chunkName));
     res.json({ code: 200, message: Messages.success(modules.UPLOAD, actions.UPLOAD, chunkName) });
   } catch (err) {
@@ -40,11 +40,11 @@ router.post('/upload', upload.any(), async (req, res) => {
 router.post('/makefile', async (req, res) => {
   const chunks = req.body.chunks;
   const filename = req.body.filename;
-  const fileHash = req.body.fileHash;
+  const chunksum = req.body.chunksum;
   const path = `${uploadPath}/${filename}`;
   try {
     for (let i = 0; i < chunks; i++) {
-      const file = `${uploadTmp}/${i}.${fileHash}.chunk`;
+      const file = `${uploadTmp}/${i}.${chunksum}.chunk`;
       const content = await fsPromises.readFile(file);
       logger.info(Messages.success(modules.UPLOAD, actions.GET, file));
       try {

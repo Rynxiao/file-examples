@@ -28,7 +28,7 @@ const initialize = async () => {
   db.Chunk = require('./models/chunk')(sequelize);
 
   // sync all models with database
-  await sequelize.sync();
+  await sequelize.sync({ alter: true });
 };
 
 initialize().then(() => {

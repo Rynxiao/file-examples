@@ -42,20 +42,20 @@ const checkSum = (file, piece = CHUNK_SIZE) => {
 
 $fileUpload.addEventListener('change', (event) => {
   const file = event.target.files[0];
-  checkSum(file).then(({ chunks, sum }) => {
+  checkSum(file).then(({ chunks, checksum }) => {
     const tasks = [];
 
     chunks.forEach((chunk, index) => {
       const fd = new FormData();
       fd.append('file', chunk);
-      fd.append('fileHash', sum);
-      fd.append('chunkIndex', index.toString());
+      fd.append('checksum', checksum);
+      fd.append('chunkId', index.toString());
       tasks.push(axios({ url: '/upload', method: 'post', data: fd }).then((res) => res.data));
     });
 
     Promise.all(tasks).then(() => {
       const filename = file.name;
-      axios({ url: '/makefile', method: 'post', data: { chunks: chunks.length, filename, fileHash: sum } });
+      axios({ url: '/makefile', method: 'post', data: { chunks: chunks.length, filename, checksum } });
     });
   });
 });
