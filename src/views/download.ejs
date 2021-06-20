@@ -191,24 +191,37 @@
                   </tr>
                 </thead>
                 <tbody class="bg-white divide-y divide-gray-200">
-                  <% files.forEach(function(file) { %>
+                  <% if (files.length > 0) { %>
+                    <% files.forEach(function(file) { %>
+                      <tr>
+                    <td class="px-6 py-4 whitespace-nowrap">
+                      <div class="flex items-center">
+                        <div class="flex-shrink-0 h-10 w-10">
+                          <img class="h-10 w-10" src="/images/file.png" alt="<%= file.name %>" />
+                        </div>
+                        <div class="ml-4">
+                          <div class="text-sm font-medium text-gray-900"><%= file.name %></div>
+                        </div>
+                      </div>
+                    </td>
+                    <td class="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
+                      <a target="_blank" href="/assets/<%= file.name %>" class="text-indigo-600 hover:text-indigo-900">Preview</a>
+                      <a href="javascript: downloadFile('<%= file.name %>');" class="ml-2 text-indigo-600 hover:text-indigo-900">Download</a>
+                      <a href="/downloads/delete/<%= file.id%>" class="ml-2 text-indigo-600 hover:text-indigo-900">Delete</a>
+                    </td>
+                  </tr>
+                    <% });%>
+                  <% } else { %>
                     <tr>
-                      <td class="px-6 py-4 whitespace-nowrap">
-                        <div class="flex items-center">
-                          <div class="flex-shrink-0 h-10 w-10">
-                            <img class="h-10 w-10" src="/images/<%= file.ext %>.png" alt="<%= file.name %>" />
-                          </div>
-                          <div class="ml-4">
-                            <div class="text-sm font-medium text-gray-900"><%= file.name %></div>
+                      <td colspan="4">
+                        <div class="flex justify-center items-center py-32">
+                          <div class="text-sm font-medium text-gray-900">
+                            Empty List, try to <a href="/" class="text-indigo-600 hover:text-indigo-900">upload</a> some files!
                           </div>
                         </div>
                       </td>
-                      <td class="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
-                        <a target="_blank" href="/assets/<%= file.name %>" class="text-indigo-600 hover:text-indigo-900">Preview</a>
-                        <a href="javascript: downloadFile('<%= file.name %>');" class="ml-2 text-indigo-600 hover:text-indigo-900">Download</a>
-                      </td>
                     </tr>
-                  <% });%>
+                  <% } %>
                 </tbody>
               </table>
             </div>
@@ -217,6 +230,6 @@
       </div>
     </div>
     <script src="https://cdn.bootcdn.net/ajax/libs/axios/0.21.1/axios.min.js"></script>
-    <script src="/javascripts/download.js"></script>
+    <script src="/dist/download.min.js"></script>
   </body>
 </html>

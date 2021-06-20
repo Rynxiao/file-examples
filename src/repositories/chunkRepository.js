@@ -39,6 +39,14 @@ const chunkRepository = {
       throw err;
     }
   },
+  deleteBy: async (deleteBy) => {
+    try {
+      return await db.Chunk.destroy({ where: deleteBy });
+    } catch (err) {
+      logger.error(Messages.fail(modules.DB, actions.DELETE, err));
+      throw err;
+    }
+  },
 };
 
 module.exports = chunkRepository;

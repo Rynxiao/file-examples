@@ -18,6 +18,22 @@ const uploadRepository = {
       throw err;
     }
   },
+  findAll: async () => {
+    try {
+      return await db.Upload.findAll();
+    } catch (err) {
+      logger.error(Messages.fail(modules.DB, actions.GET, err));
+      throw err;
+    }
+  },
+  deleteById: async (id) => {
+    try {
+      return await db.Upload.destroy({ where: { id } });
+    } catch (err) {
+      logger.error(Messages.fail(modules.DB, actions.DELETE, err));
+      throw err;
+    }
+  },
 };
 
 module.exports = uploadRepository;

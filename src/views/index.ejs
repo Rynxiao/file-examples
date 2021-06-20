@@ -4,6 +4,17 @@
     <title><%= title %></title>
     <link rel="stylesheet" href="/stylesheets/tailwind.min.css" />
     <link rel="stylesheet" href="/stylesheets/style.css" />
+    <style>
+      .bg-emerald-200 {
+        background-color: rgb(167,243,208);
+      }
+      .bg-emerald-500 {
+        background-color: rgb(16,185,129);
+      }
+      .text-emerald-600 {
+        color: rgb(5,150,105);
+      }
+    </style>
   </head>
   <body>
     <div>
@@ -191,9 +202,90 @@
           </div>
         </div>
       </div>
+      <div class="flex flex-col p-8">
+        <div class="-my-2 overflow-x-auto sm:-mx-6 lg:-mx-8">
+          <div class="py-2 align-middle inline-block min-w-full sm:px-6 lg:px-8">
+            <div class="shadow overflow-hidden border-b border-gray-200 sm:rounded-lg">
+              <table class="min-w-full divide-y divide-gray-200">
+                <thead class="bg-gray-50">
+                <tr>
+                  <th scope="col" class="w-2/6 px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Name</th>
+                  <th scope="col" class="w-1/6 px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Progress</th>
+                  <th scope="col" class="w-1/6 px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">Status</th>
+                  <th scope="col" class="relative px-6 py-3">
+                    <span class="sr-only">Actions</span>
+                  </th>
+                </tr>
+                </thead>
+                <tbody id="progressBarBody" class="bg-white divide-y divide-gray-200">
+                  <% if (files.length > 0) { %>
+                    <% files.forEach(function(file) { %>
+                      <tr>
+                        <td class="px-6 py-4 whitespace-nowrap">
+                          <div class="flex items-center">
+                            <div class="flex-shrink-0 h-10 w-10">
+                              <img
+                                      class="h-10 w-10 rounded-full"
+                                      src="https://images.unsplash.com/photo-1494790108377-be9c29b29330?ixlib=rb-1.2.1&ixid=eyJhcHBfaWQiOjEyMDd9&auto=format&fit=facearea&facepad=4&w=256&h=256&q=60"
+                                      alt=""
+                              />
+                            </div>
+                            <div class="ml-4">
+                              <div class="text-sm font-medium text-gray-900"><%= file.name %></div>
+                            </div>
+                          </div>
+                        </td>
+                        <td class="px-6 py-4 whitespace-nowrap">
+                          <div class="relative pt-1">
+                            <div class="flex mb-2 items-center justify-between">
+                              <div class="overflow-hidden h-2 text-xs flex-grow rounded bg-indigo-200">
+                                <div
+                                  style="width: 100%;"
+                                  class="shadow-none h-full flex-col text-center whitespace-nowrap text-white justify-center bg-indigo-500"
+                                ></div>
+                              </div>
+                              <div class="text-right ml-1">
+                                <span class="text-xs font-semibold inline-block text-indigo-600">100%</span>
+                              </div>
+                            </div>
+                          </div>
+                        </td>
+                        <td class="px-6 py-4 whitespace-nowrap">
+                          <div class="relative pt-1">
+                            <div class="flex mb-2 items-center justify-end">
+                              <span class="text-xs font-semibold inline-block py-1 px-2 uppercase rounded-full text-indigo-600 bg-indigo-200">
+                                file in server
+                              </span>
+                            </div>
+                          </div>
+                        </td>
+                        <td class="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
+                          <a href="#" class="sr-only text-indigo-600 hover:text-indigo-900">Pause</a>
+                          <a href="#" class="sr-only ml-2 text-indigo-600 hover:text-indigo-900">Cancel</a>
+                        </td>
+                      </tr>
+                    <% });%>
+                  <% } else { %>
+                    <tr>
+                      <td colspan="4">
+                        <div id="emptyArea" class="flex justify-center items-center py-32">
+                          <div class="text-sm font-medium text-gray-900">
+                            Empty List, try to <label for="fileUpload" class="text-indigo-600 hover:text-indigo-900 cursor-pointer">upload</label> some files!
+                          </div>
+                        </div>
+                      </td>
+                    </tr>
+                  <% } %>
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+      </div>
     </div>
     <script src="https://cdn.bootcdn.net/ajax/libs/axios/0.21.1/axios.min.js"></script>
     <script src="https://cdn.bootcdn.net/ajax/libs/spark-md5/3.0.0/spark-md5.min.js"></script>
-    <script src="/javascripts/upload.js"></script>
+    <script src="https://cdn.bootcdn.net/ajax/libs/jquery/3.6.0/jquery.min.js"></script>
+    <script src="/dist/upload.min.js"></script>
   </body>
 </html>

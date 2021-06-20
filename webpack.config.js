@@ -4,8 +4,8 @@ const { CleanWebpackPlugin } = require('clean-webpack-plugin');
 module.exports = {
   mode: 'production',
   entry: {
-    download: './public/javascripts/download.js',
-    upload: './public/javascripts/upload.js',
+    download: './public/javascripts/modules/download.js',
+    upload: './public/javascripts/modules/upload.js',
   },
   output: {
     filename: '[name].min.js',
@@ -15,13 +15,20 @@ module.exports = {
     rules: [
       {
         test: /\.js$/,
-        exclude: /(node_modules|bower_components)/,
+        exclude: /node_modules/,
         use: {
           loader: 'babel-loader',
           options: {
             presets: ['@babel/preset-env'],
             plugins: ['@babel/transform-runtime'],
           },
+        },
+      },
+      {
+        test: /\.tpl$/,
+        exclude: /node_modules/,
+        use: {
+          loader: './public/javascripts/loaders/source-loader.js',
         },
       },
     ],

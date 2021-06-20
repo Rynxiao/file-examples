@@ -9,6 +9,20 @@ const uploadPath = path.join(__dirname, '..', '../public/uploads');
 const uploadTmp = path.join(uploadPath, 'tmp');
 
 const uploadService = {
+  render: async (req, res) => {
+    try {
+      const files = await uploadRepository.findAll();
+      const list = files ? files : [];
+      const message = Messages.success(modules.UPLOAD, actions.GET, JSON.stringify(list));
+      logger.info(message);
+      res.render('index', { title: 'Upload Examples', files: list });
+    } catch (err) {
+      const errMessage = Messages.fail(modules.UPLOAD, actions.GET, err);
+      logger.error(errMessage);
+      res.json({ code: 500, message: errMessage });
+      res.status(500);
+    }
+  },
   uploadChunk: async (req, res) => {
     const file = req.files[0];
     const destination = file.destination;
@@ -48,7 +62,7 @@ const uploadService = {
           await fsPromises.appendFile(path, content);
           await fsPromises.unlink(file);
           await chunkRepository.update(
-            { completed: true, isDeleted: true },
+            { completed: true },
             {
               chunkId,
               checksum,
@@ -67,7 +81,7 @@ const uploadService = {
           await fsPromises.writeFile(path, content, { flag: 'w+' });
           await fsPromises.unlink(file);
           await chunkRepository.update(
-            { completed: true, isDeleted: true },
+            { completed: true },
             {
               chunkId,
               checksum,
@@ -93,6 +107,10 @@ const uploadService = {
         const message = Messages.success(modules.UPLOAD, actions.CHECK, `chunk ${chunk.id} exists`);
         logger.info(message);
         res.json({ code: 200, message: message, data: { id: chunk.id } });
+      } else {
+        const message = Messages.info(modules.UPLOAD, actions.CHECK, `chunk not exists`);
+        logger.info(message);
+        res.json({ code: 200, message: message, data: null });
       }
     } catch (err) {
       const errMessage = Messages.fail(modules.UPLOAD, actions.CHECK, err);
@@ -109,6 +127,10 @@ const uploadService = {
         const message = Messages.success(modules.UPLOAD, actions.CHECK, `file ${file.id} exists`);
         logger.info(message);
         res.json({ code: 200, message: message, data: { id: file.id } });
+      } else {
+        const message = Messages.info(modules.UPLOAD, actions.CHECK, `file not exists`);
+        logger.info(message);
+        res.json({ code: 200, message: message, data: null });
       }
     } catch (err) {
       const errMessage = Messages.fail(modules.UPLOAD, actions.CHECK, err);

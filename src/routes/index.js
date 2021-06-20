@@ -9,10 +9,7 @@ const uploadTmp = path.join(uploadPath, 'tmp');
 const upload = multer({ dest: uploadTmp });
 
 /* GET home page. */
-router.get('/', (req, res) => {
-  res.render('index', { title: 'Upload Examples' });
-});
-
+router.get('/', uploadService.render);
 router.get('/chunk/exist', uploadService.chunkExist);
 router.get('/file/exist', uploadService.fileExist);
 router.post('/upload', upload.any(), uploadService.uploadChunk);

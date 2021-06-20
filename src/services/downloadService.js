@@ -1,23 +1,46 @@
 const path = require('path');
-const fs = require('fs');
+const fs = require('fs/promises');
 const { Messages, logger, modules, actions } = require('../helpers');
-
-const filesPath = path.join(__dirname, '..', '/public/uploads');
-const MAC_OS_EXT = '.DS_Store';
-const ignoreFiles = [MAC_OS_EXT, 'tmp'];
+const uploadRepository = require('../repositories/uploadRepository');
+const chunkRepository = require('../repositories/chunkRepository');
+const uploadsFolder = path.resolve(__dirname, '..', '../public/uploads');
 
 const downloadService = {
   download: async (req, res) => {
-    const dir = await fs.promises.opendir(filesPath);
-    const files = [];
-    for await (const dirent of dir) {
-      const filename = dirent.name;
-      if (!ignoreFiles.includes(filename)) {
-        files.push({ name: filename, isDirectory: dirent.isDirectory(), ext: filename.split('.').pop() });
-      }
+    try {
+      const files = await uploadRepository.findAll();
+      const list = files ? files : [];
+      const message = Messages.success(modules.DOWNLOAD, actions.GET, JSON.stringify(list));
+      logger.info(message);
+      res.render('download', { title: 'Download Examples', files: list });
+    } catch (err) {
+      const errMessage = Messages.fail(modules.DOWNLOAD, actions.GET, err);
+      logger.error(errMessage);
+      res.json({ code: 500, message: errMessage });
+      res.status(500);
     }
-    logger.info(Messages.success(modules.DOWNLOAD, actions.GET, `files ${files.length}`));
-    res.render('download', { title: 'Download Examples', files });
+  },
+  deleteById: async (req, res) => {
+    const id = req.params.id;
+    try {
+      // delete chunks
+      const upload = await uploadRepository.findOne({ id });
+      await chunkRepository.deleteBy({ checksum: upload.checksum });
+
+      // delete upload
+      await uploadRepository.deleteById(id);
+
+      // delete file
+      await fs.unlink(path.resolve(uploadsFolder, upload.name));
+      const message = Messages.success(modules.DOWNLOAD, actions.DELETE, `file ${id}`);
+      logger.info(message);
+      res.redirect('/downloads');
+    } catch (err) {
+      const errMessage = Messages.fail(modules.DOWNLOAD, actions.DELETE, err);
+      logger.error(errMessage);
+      res.json({ code: 500, message: errMessage });
+      res.status(500);
+    }
   },
 };
 
