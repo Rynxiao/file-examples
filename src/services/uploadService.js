@@ -84,6 +84,39 @@ const uploadService = {
       res.status(500);
     }
   },
+  chunkExist: async (req, res) => {
+    const checksum = req.query.checksum;
+    const chunkId = req.query.chunkId;
+    try {
+      const chunk = await chunkRepository.findOne({ checksum, chunkId });
+      if (chunk) {
+        const message = Messages.success(modules.UPLOAD, actions.CHECK, `chunk ${chunk.id} exists`);
+        logger.info(message);
+        res.json({ code: 200, message: message, data: { id: chunk.id } });
+      }
+    } catch (err) {
+      const errMessage = Messages.fail(modules.UPLOAD, actions.CHECK, err);
+      logger.error(errMessage);
+      res.json({ code: 500, message: errMessage });
+      res.status(500);
+    }
+  },
+  fileExist: async (req, res) => {
+    const checksum = req.query.checksum;
+    try {
+      const file = await uploadRepository.findOne({ checksum });
+      if (file) {
+        const message = Messages.success(modules.UPLOAD, actions.CHECK, `file ${file.id} exists`);
+        logger.info(message);
+        res.json({ code: 200, message: message, data: { id: file.id } });
+      }
+    } catch (err) {
+      const errMessage = Messages.fail(modules.UPLOAD, actions.CHECK, err);
+      logger.error(errMessage);
+      res.json({ code: 500, message: errMessage });
+      res.status(500);
+    }
+  },
 };
 
 module.exports = uploadService;

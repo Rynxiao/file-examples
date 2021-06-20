@@ -31,7 +31,7 @@ const checkSum = (file, piece = CHUNK_SIZE) => {
       }
     };
 
-    fileReader.onerror = function () {
+    fileReader.onerror = () => {
       console.warn('oops, something went wrong.');
       reject();
     };
@@ -40,22 +40,42 @@ const checkSum = (file, piece = CHUNK_SIZE) => {
   });
 };
 
-$fileUpload.addEventListener('change', (event) => {
+const isFileExists = (checksum) =>
+  axios.get('/file/exist', { params: { checksum } }).then((res) => {
+    const data = res.data;
+    return data.code === 200 && !!data.data.id;
+  });
+
+const isChunkExists = (checksum, chunkId) =>
+  axios.get('/chunk/exist', { params: { checksum, chunkId } }).then((res) => {
+    const data = res.data;
+    return data.code === 200 && !!data.data.id;
+  });
+
+$fileUpload.addEventListener('change', async (event) => {
   const file = event.target.files[0];
-  checkSum(file).then(({ chunks, checksum }) => {
+  const { chunks, checksum } = await checkSum(file);
+  const fileExists = await isFileExists(checksum);
+
+  if (!fileExists) {
     const tasks = [];
 
-    chunks.forEach((chunk, index) => {
-      const fd = new FormData();
-      fd.append('file', chunk);
-      fd.append('checksum', checksum);
-      fd.append('chunkId', index.toString());
-      tasks.push(axios({ url: '/upload', method: 'post', data: fd }).then((res) => res.data));
-    });
+    for (const chunk of chunks) {
+      const index = chunks.indexOf(chunk);
+      const chunkExists = await isChunkExists(checksum, index);
+      if (!chunkExists) {
+        const fd = new FormData();
+        fd.append('file', chunk);
+        fd.append('checksum', checksum);
+        fd.append('chunkId', index.toString());
+
+        tasks.push(axios({ url: '/upload', method: 'post', data: fd }).then((res) => res.data));
+      }
+    }
 
     Promise.all(tasks).then(() => {
       const filename = file.name;
       axios({ url: '/makefile', method: 'post', data: { chunks: chunks.length, filename, checksum } });
     });
-  });
+  }
 });

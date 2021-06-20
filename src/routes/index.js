@@ -13,6 +13,8 @@ router.get('/', (req, res) => {
   res.render('index', { title: 'Upload Examples' });
 });
 
+router.get('/chunk/exist', uploadService.chunkExist);
+router.get('/file/exist', uploadService.fileExist);
 router.post('/upload', upload.any(), uploadService.uploadChunk);
 router.post('/makefile', uploadService.makeFile);
 
