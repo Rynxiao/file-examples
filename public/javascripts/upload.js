@@ -26,8 +26,8 @@ const checkSum = (file, piece = CHUNK_SIZE) => {
         spark.append(buffer);
         loadNext();
       } else {
-        const sum = spark.end();
-        resolve({ chunks, sum });
+        const checksum = spark.end();
+        resolve({ chunks, checksum });
       }
     };
 

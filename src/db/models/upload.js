@@ -5,7 +5,7 @@ const attributes = {
   id: {
     primaryKey: true,
     allowNull: false,
-    type: Sequelize.UUID,
+    type: DataTypes.UUID,
     defaultValue: Sequelize.UUIDV4,
   },
   name: {
@@ -27,7 +27,7 @@ const attributes = {
 };
 
 const options = {
-  indexes: [{ unique: true, fields: ['checksum'] }],
+  indexes: [{ fields: ['checksum'] }],
 };
 
 module.exports = (sequelize) => sequelize.define(TABLE_NAME, attributes, options);
