@@ -10,9 +10,9 @@
 - tailwind css
 - jquery
 - ejs
-- heroku
 - webpack
 - docker
+- heroku
 
 ### Run
 
@@ -28,8 +28,8 @@ npm run db:stop
 
 - Prod
 ```shell
-docker-compose up -d
+npm run start:prod
 
 # down
-docker-compose down
+npm run stop:prod
 ```

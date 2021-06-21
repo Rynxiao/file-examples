@@ -6,6 +6,8 @@
     "start": "node ./bin/www",
     "build": "webpack",
     "build:watch": "webpack --watch",
+    "start:prod": "./scripts/deploy.sh",
+    "stop:prod": "./scripts/stop.sh",
     "db:start": "./scripts/start-db.sh",
     "db:stop": "./scripts/stop-db.sh"
   },
