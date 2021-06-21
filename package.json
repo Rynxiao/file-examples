@@ -11,6 +11,9 @@
     "db:start": "./scripts/start-db.sh",
     "db:stop": "./scripts/stop-db.sh"
   },
+  "engines": {
+    "node": "16.x"
+  },
   "dependencies": {
     "cookie-parser": "~1.4.4",
     "debug": "~2.6.9",
