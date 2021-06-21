@@ -16,6 +16,10 @@
 
 ### Run
 
+```shell
+chmod -R +x ./scripts
+```
+
 - Local
 ```shell
 npm run db:start
