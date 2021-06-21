@@ -1,18 +1,21 @@
-function GET(url, callback) {
-  let xhr = new XMLHttpRequest();
-  xhr.open('GET', url, true);
-  xhr.withCredentials = true;
-  xhr.responseType = 'blob'; // or xhr.responseType = "blob";
-  xhr.send();
+const $downloadBody = $('#downloadBody');
 
-  xhr.onload = function (e) {
-    if (xhr.status !== 200) {
-      alert('Unexpected status code ' + xhr.status + ' for ' + url);
-      return false;
-    }
-    callback(new Blob([xhr.response])); // or new Blob([xhr.response]);
-  };
-}
+const GET = (url) =>
+  new Promise((resolve, reject) => {
+    let xhr = new XMLHttpRequest();
+    xhr.open('GET', url, true);
+    xhr.withCredentials = true;
+    xhr.responseType = 'blob'; // or xhr.responseType = "blob";
+    xhr.send();
+
+    xhr.onload = function (e) {
+      if (xhr.status !== 200) {
+        alert('Unexpected status code ' + xhr.status + ' for ' + url);
+        reject();
+      }
+      resolve(new Blob([xhr.response]));
+    };
+  });
 
 const download = (fileName, blob) => {
   const link = document.createElement('a');
@@ -23,8 +26,8 @@ const download = (fileName, blob) => {
   URL.revokeObjectURL(link.href);
 };
 
-const downloadFile = (filename) => {
-  GET(`assets/${filename}`, (blob) => {
-    download(filename, blob);
-  });
-};
+$downloadBody.on('click', async (event) => {
+  const filename = $(event.target).data('name');
+  const blob = await GET(`uploads/${filename}`);
+  download(filename, blob);
+});

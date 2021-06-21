@@ -190,7 +190,7 @@
                     </th>
                   </tr>
                 </thead>
-                <tbody class="bg-white divide-y divide-gray-200">
+                <tbody id="downloadBody" class="bg-white divide-y divide-gray-200">
                   <% if (files.length > 0) { %>
                     <% files.forEach(function(file) { %>
                       <tr>
@@ -205,8 +205,8 @@
                       </div>
                     </td>
                     <td class="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
-                      <a target="_blank" href="/assets/<%= file.name %>" class="text-indigo-600 hover:text-indigo-900">Preview</a>
-                      <a href="javascript: downloadFile('<%= file.name %>');" class="ml-2 text-indigo-600 hover:text-indigo-900">Download</a>
+                      <a target="_blank" href="/uploads/<%= file.name %>" class="text-indigo-600 hover:text-indigo-900">Preview</a>
+                      <a href="javascript: void(0);" data-name="<%= file.name %>" class="ml-2 text-indigo-600 hover:text-indigo-900">Download</a>
                       <a href="/downloads/delete/<%= file.id%>" class="ml-2 text-indigo-600 hover:text-indigo-900">Delete</a>
                     </td>
                   </tr>
@@ -230,6 +230,7 @@
       </div>
     </div>
     <script src="https://cdn.bootcdn.net/ajax/libs/axios/0.21.1/axios.min.js"></script>
+    <script src="https://cdn.bootcdn.net/ajax/libs/jquery/3.6.0/jquery.min.js"></script>
     <script src="/dist/download.min.js"></script>
   </body>
 </html>
