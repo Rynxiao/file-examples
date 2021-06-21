@@ -2,16 +2,16 @@ version: "3.9"
 services:
   web:
     build: .
-    command: npm run start
-    ports:
-      - "3000:3000"
+    command: sleep 1 && npm run start
     depends_on:
       - db
+    network_mode: service:db
   db:
     image: mysql:8
     command: --default-authentication-plugin=mysql_native_password
     restart: always
     ports:
       - "3306:3306"
+      - "3000:3000"
     environment:
       MYSQL_ROOT_PASSWORD: pwd123
