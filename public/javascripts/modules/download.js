@@ -10,7 +10,7 @@ const GET = (url) =>
 
     xhr.onload = function (e) {
       if (xhr.status !== 200) {
-        alert('Unexpected status code ' + xhr.status + ' for ' + url);
+        console.error('Unexpected status code ' + xhr.status + ' for ' + url);
         reject();
       }
       resolve(new Blob([xhr.response]));
@@ -26,7 +26,7 @@ const download = (fileName, blob) => {
   URL.revokeObjectURL(link.href);
 };
 
-$downloadBody.on('click', async (event) => {
+$downloadBody.on('click', '.download', async (event) => {
   const filename = $(event.target).data('name');
   const blob = await GET(`uploads/${filename}`);
   download(filename, blob);

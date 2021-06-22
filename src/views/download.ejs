@@ -205,9 +205,9 @@
                       </div>
                     </td>
                     <td class="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
-                      <a target="_blank" href="/uploads/<%= file.name %>" class="text-indigo-600 hover:text-indigo-900">Preview</a>
-                      <a href="javascript: void(0);" data-name="<%= file.name %>" class="ml-2 text-indigo-600 hover:text-indigo-900">Download</a>
-                      <a href="/downloads/delete/<%= file.id%>" class="ml-2 text-indigo-600 hover:text-indigo-900">Delete</a>
+                      <a target="_blank" href="/uploads/<%= file.name %>" class="preview text-indigo-600 hover:text-indigo-900">Preview</a>
+                      <a href="javascript: void(0);" data-name="<%= file.name %>" class="download ml-2 text-indigo-600 hover:text-indigo-900">Download</a>
+                      <a href="/downloads/delete/<%= file.id%>" class="delete ml-2 text-indigo-600 hover:text-indigo-900">Delete</a>
                     </td>
                   </tr>
                     <% });%>
