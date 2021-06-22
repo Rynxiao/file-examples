@@ -1,11 +1,12 @@
 const { Sequelize } = require('sequelize');
 const mysql = require('mysql2/promise');
-const cfg = require('./config');
 const { logger, Messages, actions, modules } = require('../helpers');
 
 module.exports = db = {};
 
-const config = process.env.NODE_ENV === 'production' ? cfg.prod : cfg.dev;
+const env = process.env.NODE_ENV;
+const configPath = env ? `./config/config.${env}` : './config/config.local';
+const config = require(configPath);
 
 const initialize = async () => {
   // create db if it doesn't already exist

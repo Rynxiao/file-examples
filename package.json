@@ -3,7 +3,7 @@
   "version": "0.0.0",
   "private": true,
   "scripts": {
-    "start": "node ./bin/www",
+    "start": "NODE_ENV=local node ./bin/www",
     "build": "webpack",
     "build:watch": "webpack --watch",
     "start:prod": "./scripts/deploy.sh",
