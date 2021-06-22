@@ -18,13 +18,13 @@
       <div class="flex mb-2 items-center justify-between">
         <div class="overflow-hidden h-2 text-xs flex-grow rounded bg-emerald-200">
           <div
-                  style="width: 100%;"
-                  class="shadow-none h-full flex-col text-center whitespace-nowrap text-white justify-center bg-indigo-500"
+                  style="width: 0;"
+                  class="shadow-none h-full flex-col text-center whitespace-nowrap text-white justify-center bg-emerald-500"
                   id="progressBar{{checksum}}"
           ></div>
         </div>
         <div class="text-right ml-1">
-          <span id="percent{{checksum}}" class="text-xs font-semibold inline-block text-emerald-600">100%</span>
+          <span id="percent{{checksum}}" class="text-xs font-semibold inline-block text-emerald-600">0%</span>
         </div>
       </div>
     </div>
@@ -33,7 +33,7 @@
     <div class="relative pt-1">
       <div class="flex mb-2 items-center justify-end">
         <span id="flag{{checksum}}" class="text-xs font-semibold inline-block py-1 px-2 uppercase rounded-full text-emerald-600 bg-emerald-200">
-          file in server
+          task in progress
         </span>
       </div>
     </div>
