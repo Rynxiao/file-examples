@@ -1,7 +1,5 @@
 build:
   docker:
     web: Dockerfile
-  config:
-    NODE_ENV: heroku
 run:
   web: npm run start:heroku
