@@ -62,9 +62,12 @@ const getCurrentLoaded = (progresses) =>
   }, 0);
 
 const showProgress = (checksum, percent, text = 'done') => {
-  $(`#progressBar${checksum}`).css('width', `${percent}%`);
-  $(`#percent${checksum}`).text(`${percent}%`);
-  if (Number(percent) === 100) {
+  // for some reason, progressEvent.loaded bytes will greater than file size
+  const isDone = Number(percent) >= 100;
+  const ratio = isDone ? 100 : percent;
+  $(`#progressBar${checksum}`).css('width', `${ratio}%`);
+  $(`#percent${checksum}`).text(`${ratio}%`);
+  if (isDone) {
     $(`#flag${checksum}`).text(text);
   }
 };

@@ -8,6 +8,44 @@ const chunkRepository = require('../repositories/chunkRepository');
 const uploadPath = path.join(__dirname, '..', '../public/uploads');
 const uploadTmp = path.join(uploadPath, 'tmp');
 
+const createFile = async (params) => {
+  const { path, content, file, checksum, chunkId } = params;
+  logger.info(Messages.info(modules.UPLOAD, actions.CREATE, path, `File ${path} not exists, `));
+  await fsPromises.writeFile(path, content, { flag: 'w+' });
+  await fsPromises.unlink(file);
+  await chunkRepository.update(
+    { completed: true },
+    {
+      chunkId,
+      checksum,
+    }
+  );
+  logger.info(Messages.success(modules.UPLOAD, actions.UPLOAD, `chunk ${file}`));
+};
+
+const appendFile = async (params) => {
+  const { path, content, file, checksum, chunkId } = params;
+  await fsPromises.appendFile(path, content);
+  await fsPromises.unlink(file);
+  await chunkRepository.update(
+    { completed: true },
+    {
+      chunkId,
+      checksum,
+    }
+  );
+  logger.info(Messages.success(modules.UPLOAD, actions.UPLOAD, `chunk ${file}`));
+};
+
+const saveFileRecordToDB = async (params) => {
+  const { filename, checksum, chunks, res } = params;
+  await uploadRepository.create({ name: filename, checksum, chunks });
+
+  const message = Messages.success(modules.UPLOAD, actions.UPLOAD, filename);
+  logger.info(message);
+  res.json({ code: 200, message });
+};
+
 const uploadService = {
   render: async (req, res) => {
     try {
@@ -53,40 +91,26 @@ const uploadService = {
     const path = `${uploadPath}/${filename}`;
 
     try {
-      for (let chunkId = 0; chunkId < chunks; chunkId++) {
+      if (chunks === 1) {
+        const chunkId = 0;
         const file = `${uploadTmp}/${chunkId}.${checksum}.chunk`;
         const content = await fsPromises.readFile(file);
-        logger.info(Messages.success(modules.UPLOAD, actions.GET, file));
-        try {
-          await fsPromises.access(path, fs.constants.F_OK);
-          await fsPromises.appendFile(path, content);
-          await fsPromises.unlink(file);
-          await chunkRepository.update(
-            { completed: true },
-            {
-              chunkId,
-              checksum,
+        await createFile({ path, content, file, checksum, chunkId });
+        await saveFileRecordToDB({ filename, checksum, chunks, res });
+      } else {
+        for (let chunkId = 0; chunkId < chunks; chunkId++) {
+          const file = `${uploadTmp}/${chunkId}.${checksum}.chunk`;
+          const content = await fsPromises.readFile(file);
+          logger.info(Messages.success(modules.UPLOAD, actions.GET, file));
+          try {
+            await fsPromises.access(path, fs.constants.F_OK);
+            await appendFile({ path, content, file, checksum, chunkId });
+            if (chunkId === chunks - 1) {
+              await saveFileRecordToDB({ filename, checksum, chunks, res });
             }
-          );
-          logger.info(Messages.success(modules.UPLOAD, actions.DELETE, `chunk ${file}`));
-          if (chunkId === chunks - 1) {
-            await uploadRepository.create({ name: filename, checksum, chunks });
-
-            const message = Messages.success(modules.UPLOAD, actions.UPLOAD, filename);
-            logger.info(message);
-            res.json({ code: 200, message });
+          } catch (err) {
+            await createFile({ path, content, file, checksum, chunkId });
           }
-        } catch (err) {
-          logger.info(Messages.info(modules.UPLOAD, actions.CREATE, path, `File ${path} not exists, `));
-          await fsPromises.writeFile(path, content, { flag: 'w+' });
-          await fsPromises.unlink(file);
-          await chunkRepository.update(
-            { completed: true },
-            {
-              chunkId,
-              checksum,
-            }
-          );
         }
       }
     } catch (err) {
