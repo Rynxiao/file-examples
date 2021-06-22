@@ -4,4 +4,4 @@ build:
   config:
     NODE_ENV: heroku
 run:
-  web: npm start:heroku
+  web: npm run start:heroku
