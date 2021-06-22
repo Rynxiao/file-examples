@@ -1,4 +1,5 @@
 import { CHUNK_SIZE } from '../constants';
+import { ID } from '../utils';
 import progressBarTpl from '../templates/progressBar.tpl';
 
 const $fileUpload = $('#fileUpload');
@@ -44,16 +45,29 @@ const checkSum = (file, piece = CHUNK_SIZE) => {
 };
 
 const isFileExists = (checksum) =>
-  axios.get('/file/exist', { params: { checksum } }).then((res) => {
-    const data = res.data;
-    return data.code === 200 && data.data && !!data.data.id;
-  });
+  axios
+    .get('/file/exist', { params: { checksum } })
+    .then((res) => {
+      const data = res.data;
+      if (data.code === 200 && data.data) {
+        return { exists: data.data.exists, files: data.data.files };
+      }
+      return { exists: false, data: null };
+    })
+    .catch((err) => {
+      console.error(`check file exists ${checksum} error`, err);
+    });
 
 const isChunkExists = (checksum, chunkId) =>
-  axios.get('/chunk/exist', { params: { checksum, chunkId } }).then((res) => {
-    const data = res.data;
-    return data.code === 200 && data.data && !!data.data.id;
-  });
+  axios
+    .get('/chunk/exist', { params: { checksum, chunkId } })
+    .then((res) => {
+      const data = res.data;
+      return data.code === 200 && data.data && !!data.data.id;
+    })
+    .catch((err) => {
+      console.error(`check chunk exists ${checksum} - ${chunkId} error`, err);
+    });
 
 const getCurrentLoaded = (progresses) =>
   progresses.reduce((total, cur) => {
@@ -75,22 +89,26 @@ const showProgress = (checksum, percent, text = 'done') => {
 };
 
 const chunkUploadTask = (options) => {
-  const { chunk, checksum, index, progresses, fileSize } = options;
+  const { chunk, checksum, index: chunkId, progresses, fileSize } = options;
   const fd = new FormData();
   fd.append('file', chunk);
   fd.append('checksum', checksum);
-  fd.append('chunkId', index.toString());
+  fd.append('chunkId', chunkId.toString());
 
   return axios({
     url: '/upload',
     method: 'post',
     data: fd,
     onUploadProgress: (progressEvent) => {
-      progresses[index] = progressEvent.loaded;
+      progresses[chunkId] = progressEvent.loaded;
       const percent = ((getCurrentLoaded(progresses) / fileSize) * 100).toFixed(0);
       showProgress(checksum, percent);
     },
-  }).then((res) => res.data);
+  })
+    .then((res) => res.data)
+    .catch((err) => {
+      console.error(`upload chunk ${checksum} - ${chunkId} error`, err);
+    });
 };
 
 const renderProgressBar = (filename, checksum) => {
@@ -98,39 +116,70 @@ const renderProgressBar = (filename, checksum) => {
     // if html of progress bar is not exists, then render it
     const html = progressBarTpl.replace(/\{\{\s*name\s*\}\}/g, filename).replace(/\{\{\s*checksum\s*\}\}/g, checksum);
     $progressBarBody.append($(html));
-    $emptyArea.remove();
+    if ($emptyArea.length > 0) {
+      $emptyArea.remove();
+    }
   }
 };
 
 $fileUpload.on('change', async (event) => {
   const file = event.target.files[0];
+  const filename = file.name;
+  const fileSize = file.size;
   const { chunks, checksum } = await checkSum(file);
-  const fileExists = await isFileExists(checksum);
+  const { exists, files } = await isFileExists(checksum);
 
   // trigger onchange when choose same file
   event.target.value = '';
 
-  renderProgressBar(file.name, checksum);
-
-  if (!fileExists) {
+  if (!exists) {
     const tasks = [];
     const progresses = Array(chunks.length).fill(0);
+    renderProgressBar(file.name, checksum);
 
     for (const chunk of chunks) {
-      const index = chunks.indexOf(chunk);
-      const chunkExists = await isChunkExists(checksum, index);
+      const chunkId = chunks.indexOf(chunk);
+      const chunkExists = await isChunkExists(checksum, chunkId);
       if (!chunkExists) {
-        tasks.push(chunkUploadTask({ chunk, checksum, index, progresses, fileSize: file.size }));
+        tasks.push(chunkUploadTask({ chunk, checksum, index: chunkId, progresses, fileSize }));
       } else {
-        progresses[index] = chunk.size;
+        progresses[chunkId] = chunk.size;
       }
     }
 
     Promise.all(tasks).then(() => {
-      const filename = file.name;
-      axios({ url: '/makefile', method: 'post', data: { chunks: chunks.length, filename, checksum } });
+      axios({ url: '/makefile', method: 'post', data: { chunks: chunks.length, filename, checksum } })
+        .then((res) => {
+          if (res.code === 200) {
+            console.log(`file ${filename} upload successfully!`);
+          }
+        })
+        .catch((err) => {
+          console.error(`file ${filename} upload error`, err);
+        });
     });
   } else {
-    showProgress(checksum, 100, 'done in second');
+    const id = ID();
+    renderProgressBar(filename, id);
+    showProgress(id, 100, 'done in second');
+
+    const names = files.map((file) => file.name);
+    if (names.indexOf(filename) === -1) {
+      const sourceFilename = names[0];
+      const targetFilename = filename;
+      axios({
+        url: '/copyfile',
+        method: 'get',
+        params: { targetFilename, sourceFilename, checksum },
+      })
+        .then((res) => {
+          if (res.code === 200) {
+            console.log(`file ${filename} upload successfully!`);
+          }
+        })
+        .catch((err) => {
+          console.error(`file ${filename} upload error`, err);
+        });
+    }
   }
 });

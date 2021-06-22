@@ -26,6 +26,14 @@ const uploadRepository = {
       throw err;
     }
   },
+  findAllBy: async (whereBy) => {
+    try {
+      return await db.Upload.findAll({ where: whereBy });
+    } catch (err) {
+      logger.error(Messages.fail(modules.DB, actions.GET, err));
+      throw err;
+    }
+  },
   deleteById: async (id) => {
     try {
       return await db.Upload.destroy({ where: { id } });

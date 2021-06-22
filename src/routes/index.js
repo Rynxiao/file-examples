@@ -14,5 +14,6 @@ router.get('/chunk/exist', uploadService.chunkExist);
 router.get('/file/exist', uploadService.fileExist);
 router.post('/upload', upload.any(), uploadService.uploadChunk);
 router.post('/makefile', uploadService.makeFile);
+router.get('/copyfile', uploadService.copyFile);
 
 module.exports = router;

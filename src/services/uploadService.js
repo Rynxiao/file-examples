@@ -38,8 +38,8 @@ const appendFile = async (params) => {
 };
 
 const saveFileRecordToDB = async (params) => {
-  const { filename, checksum, chunks, res } = params;
-  await uploadRepository.create({ name: filename, checksum, chunks });
+  const { filename, checksum, chunks, isCopy, res } = params;
+  await uploadRepository.create({ name: filename, checksum, chunks, isCopy });
 
   const message = Messages.success(modules.UPLOAD, actions.UPLOAD, filename);
   logger.info(message);
@@ -96,7 +96,7 @@ const uploadService = {
         const file = `${uploadTmp}/${chunkId}.${checksum}.chunk`;
         const content = await fsPromises.readFile(file);
         await createFile({ path, content, file, checksum, chunkId });
-        await saveFileRecordToDB({ filename, checksum, chunks, res });
+        await saveFileRecordToDB({ filename, checksum, chunks, isCopy: false, res });
       } else {
         for (let chunkId = 0; chunkId < chunks; chunkId++) {
           const file = `${uploadTmp}/${chunkId}.${checksum}.chunk`;
@@ -106,7 +106,7 @@ const uploadService = {
             await fsPromises.access(path, fs.constants.F_OK);
             await appendFile({ path, content, file, checksum, chunkId });
             if (chunkId === chunks - 1) {
-              await saveFileRecordToDB({ filename, checksum, chunks, res });
+              await saveFileRecordToDB({ filename, checksum, chunks, isCopy: false, res });
             }
           } catch (err) {
             await createFile({ path, content, file, checksum, chunkId });
@@ -116,6 +116,23 @@ const uploadService = {
     } catch (err) {
       await fsPromises.unlink(path);
 
+      const message = Messages.fail(modules.UPLOAD, actions.UPLOAD, err.message);
+      logger.info(message);
+      res.json({ code: 500, message });
+      res.status(500);
+    }
+  },
+  copyFile: async (req, res) => {
+    const sourceFilename = req.query.sourceFilename;
+    const targetFilename = req.query.targetFilename;
+    const checksum = req.query.checksum;
+    const sourceFile = `${uploadPath}/${sourceFilename}`;
+    const targetFile = `${uploadPath}/${targetFilename}`;
+
+    try {
+      await fsPromises.copyFile(sourceFile, targetFile);
+      await saveFileRecordToDB({ filename: targetFilename, checksum, chunks: 0, isCopy: true, res });
+    } catch (err) {
       const message = Messages.fail(modules.UPLOAD, actions.UPLOAD, err.message);
       logger.info(message);
       res.json({ code: 500, message });
@@ -146,11 +163,11 @@ const uploadService = {
   fileExist: async (req, res) => {
     const checksum = req.query.checksum;
     try {
-      const file = await uploadRepository.findOne({ checksum });
-      if (file) {
-        const message = Messages.success(modules.UPLOAD, actions.CHECK, `file ${file.id} exists`);
+      const files = await uploadRepository.findAllBy({ checksum });
+      if (files.length !== 0) {
+        const message = Messages.success(modules.UPLOAD, actions.CHECK, `file ${checksum} exists`);
         logger.info(message);
-        res.json({ code: 200, message: message, data: { id: file.id } });
+        res.json({ code: 200, message: message, data: { exists: true, files } });
       } else {
         const message = Messages.info(modules.UPLOAD, actions.CHECK, `file not exists`);
         logger.info(message);

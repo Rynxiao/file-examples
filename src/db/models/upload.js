@@ -18,7 +18,11 @@ const attributes = {
   },
   chunks: {
     type: DataTypes.INTEGER,
-    allowNull: false,
+    defaultValue: 0,
+  },
+  isCopy: {
+    type: DataTypes.BOOLEAN,
+    defaultValue: false,
   },
 };
 

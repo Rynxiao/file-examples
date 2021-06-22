@@ -25,7 +25,9 @@ const downloadService = {
     try {
       // delete chunks
       const upload = await uploadRepository.findOne({ id });
-      await chunkRepository.deleteBy({ checksum: upload.checksum });
+      if (!upload.isCopy) {
+        await chunkRepository.deleteBy({ checksum: upload.checksum });
+      }
 
       // delete upload
       await uploadRepository.deleteById(id);
