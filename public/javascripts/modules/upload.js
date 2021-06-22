@@ -161,12 +161,13 @@ $fileUpload.on('change', async (event) => {
   } else {
     const id = ID();
     renderProgressBar(filename, id);
-    showProgress(id, 100, 'done in second');
 
     const names = files.map((file) => file.name);
     if (names.indexOf(filename) === -1) {
       const sourceFilename = names[0];
       const targetFilename = filename;
+
+      showProgress(id, 100, 'done in second');
       axios({
         url: '/copyfile',
         method: 'get',
@@ -180,6 +181,8 @@ $fileUpload.on('change', async (event) => {
         .catch((err) => {
           console.error(`file ${filename} upload error`, err);
         });
+    } else {
+      showProgress(id, 100, 'existed');
     }
   }
 });
