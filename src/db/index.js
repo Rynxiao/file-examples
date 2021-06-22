@@ -5,7 +5,7 @@ const { logger, Messages, actions, modules } = require('../helpers');
 module.exports = db = {};
 
 const env = process.env.NODE_ENV;
-const configPath = env ? `./config/config.${env}` : './config/config.local';
+const configPath = env ? `./config/${env}` : './config/local';
 const config = require(configPath);
 
 const initialize = async () => {
