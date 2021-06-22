@@ -4,10 +4,11 @@
   "private": true,
   "scripts": {
     "start": "NODE_ENV=local node ./bin/www",
-    "build": "webpack",
-    "build:watch": "webpack --watch",
+    "start:heroku": "NODE_ENV=heroku node ./bin/www",
     "start:prod": "./scripts/deploy.sh",
     "stop:prod": "./scripts/stop.sh",
+    "build": "webpack",
+    "build:watch": "webpack --watch",
     "db:start": "./scripts/start-db.sh",
     "db:stop": "./scripts/stop-db.sh"
   },
