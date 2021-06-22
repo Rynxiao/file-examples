@@ -69,6 +69,8 @@ const showProgress = (checksum, percent, text = 'done') => {
   $(`#percent${checksum}`).text(`${ratio}%`);
   if (isDone) {
     $(`#flag${checksum}`).text(text);
+    $(`#pause${checksum}`).hide();
+    $(`#cancel${checksum}`).hide();
   }
 };
 
