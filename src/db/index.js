@@ -23,8 +23,7 @@ const initialize = async () => {
   const sequelize = new Sequelize(DATABASE, USER, PASSWORD, {
     host: HOST,
     dialect: 'mysql',
-    // logging: (msg) => logger.debug(Messages.info(modules.DB, actions.CONNECT, msg)),
-    logging: console.log,
+    logging: (msg) => logger.info(Messages.info(modules.DB, actions.CONNECT, msg)),
   });
 
   // init models and add them to the exported db object
