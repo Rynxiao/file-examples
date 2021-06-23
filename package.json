@@ -7,8 +7,9 @@
     "start:heroku": "NODE_ENV=heroku node ./bin/www",
     "start:prod": "./scripts/deploy.sh",
     "stop:prod": "./scripts/stop.sh",
-    "build": "webpack",
-    "build:watch": "webpack --watch",
+    "build": "NODE_ENV=dev webpack",
+    "build:watch": "NODE_ENV=dev webpack --watch",
+    "build:prod": "NODE_ENV=prod webpack",
     "db:start": "./scripts/start-db.sh",
     "db:stop": "./scripts/stop-db.sh"
   },

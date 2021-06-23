@@ -1,8 +1,10 @@
 const path = require('path');
 const { CleanWebpackPlugin } = require('clean-webpack-plugin');
 
+const mode = process.env.NODE_ENV === 'prod' ? 'production' : 'development';
+
 module.exports = {
-  mode: 'production',
+  mode,
   entry: {
     download: './public/javascripts/modules/download.js',
     upload: './public/javascripts/modules/upload.js',
