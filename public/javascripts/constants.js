@@ -1,4 +1,4 @@
-export const CHUNK_SIZE = 1024 * 1024 * 0.2;
+export const CHUNK_SIZE = 1024 * 1024 * 2;
 
 export const fileStatus = {
   UPLOADING: 'Task In Progress',
