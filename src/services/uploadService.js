@@ -150,18 +150,47 @@ const uploadService = {
     const checksum = req.query.checksum;
     const chunkId = req.query.chunkId;
     try {
-      const chunk = await chunkRepository.findOne({ checksum, chunkId });
-      if (chunk) {
-        const message = Messages.success(modules.UPLOAD, actions.CHECK, `chunk ${chunk.id} exists`);
-        logger.info(message);
-        res.json({ code: 200, message: message, data: { id: chunk.id } });
-      } else {
+      try {
+        const chunkPath = `${uploadTmp}/${chunkId}.${checksum}.chunk`;
+        await fsPromises.access(chunkPath, fs.constants.F_OK);
+
+        const chunk = await chunkRepository.findOne({ checksum, chunkId });
+        if (chunk) {
+          const message = Messages.success(modules.UPLOAD, actions.CHECK, `chunk ${chunk.id} exists`);
+          logger.info(message);
+          res.json({ code: 200, message: message, data: { id: chunk.id } });
+        } else {
+          const message = Messages.info(modules.UPLOAD, actions.CHECK, `chunk not exists`);
+          logger.info(message);
+          res.json({ code: 200, message: message, data: null });
+        }
+      } catch (err) {
+        // if chunk is not existed, but chunk info has save into db
+        // delete chunk info in db
+        await chunkRepository.deleteBy({ checksum, chunkId });
         const message = Messages.info(modules.UPLOAD, actions.CHECK, `chunk not exists`);
         logger.info(message);
         res.json({ code: 200, message: message, data: null });
       }
     } catch (err) {
       const errMessage = Messages.fail(modules.UPLOAD, actions.CHECK, err);
+      logger.error(errMessage);
+      res.json({ code: 500, message: errMessage });
+      res.status(500);
+    }
+  },
+  deleteChunk: async (req, res) => {
+    const checksum = req.query.checksum;
+    const chunkId = req.query.chunkId;
+    const file = `${uploadTmp}/${chunkId}.${checksum}.chunk`;
+
+    try {
+      await fsPromises.unlink(file);
+      const message = Messages.success(modules.UPLOAD, actions.DELETE, file);
+      logger.info(message);
+      res.json({ code: 200, message, data: null });
+    } catch (err) {
+      const errMessage = Messages.fail(modules.UPLOAD, actions.DELETE, err);
       logger.error(errMessage);
       res.json({ code: 500, message: errMessage });
       res.status(500);

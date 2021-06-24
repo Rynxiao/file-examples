@@ -39,6 +39,6 @@
     </div>
   </td>
   <td class="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
-    <a id="cancel{{id}}" href="javascript: void(0);" class="ml-2 text-indigo-600 hover:text-indigo-900">Cancel</a>
+    <a id="cancel{{id}}" data-status="cancel" href="javascript: void(0);" class="ml-2 text-indigo-600 hover:text-indigo-900">Cancel</a>
   </td>
 </tr>

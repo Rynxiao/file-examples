@@ -6,6 +6,7 @@ const router = express.Router();
 /* GET home page. */
 router.get('/', uploadService.render);
 router.get('/chunk/exist', uploadService.chunkExist);
+router.delete('/chunk/delete', uploadService.deleteChunk);
 router.get('/file/exist', uploadService.fileExist);
 router.post('/upload', multerUpload.any(), uploadService.uploadChunk);
 router.post('/makefile', uploadService.makeFile);
