@@ -6,12 +6,15 @@ import progressBarTpl from '../templates/progressBar.tpl';
 const $fileUpload = $('#fileUpload');
 const $progressBarBody = $('#progressBarBody');
 const $emptyArea = $('#emptyArea');
+const CancelToken = axios.CancelToken;
 
 class Upload {
   constructor(checksum, chunks, file) {
     this.checksum = checksum;
     this.chunks = chunks;
     this.file = file;
+    this.serverFiles = [];
+    this.cancelers = [];
   }
 
   _getCurrentLoaded(progresses) {
@@ -38,8 +41,14 @@ class Upload {
     const filename = this.file.name;
     if (!$(`#progressBar${id}`).length) {
       // if html of progress bar is not exists, then render it
-      const html = progressBarTpl.replace(/\{\{\s*name\s*\}\}/g, filename).replace(/\{\{\s*checksum\s*\}\}/g, id);
+      const html = progressBarTpl.replace(/\{\{\s*name\s*\}\}/g, filename).replace(/\{\{\s*id\s*\}\}/g, id);
       $progressBarBody.append($(html));
+
+      // bind cancel event
+      $(`#cancel${id}`).on('click', () => {
+        this.cancelUpload();
+      });
+
       if ($emptyArea.length > 0) {
         $emptyArea.remove();
       }
@@ -60,9 +69,11 @@ class Upload {
   }
 
   _chunkUploadTask(params) {
+    let canceler;
     const { chunk, chunkId, progresses } = params;
     const fd = new FormData();
-    fd.append('file', chunk);
+    const chunkName = `${chunkId}.${this.checksum}.chunk`;
+    fd.append(chunkName, chunk);
     fd.append('checksum', this.checksum);
     fd.append('chunkId', chunkId.toString());
 
@@ -75,11 +86,28 @@ class Upload {
         const percent = ((this._getCurrentLoaded(progresses) / this.file.size) * 100).toFixed(0);
         this._showProgress(this.checksum, percent);
       },
+      cancelToken: new CancelToken((c) => {
+        // An executor function receives a cancel function as a parameter
+        canceler = c;
+        this.cancelers.push(canceler);
+      }),
     })
-      .then((res) => res.data)
+      .then((res) => {
+        const cancelerIndex = this.cancelers.indexOf(canceler);
+        this.cancelers.splice(cancelerIndex, 1);
+        return res.data;
+      })
       .catch((err) => {
         console.error(`upload chunk ${this.checksum} - ${chunkId} error`, err);
       });
+  }
+
+  cancelUpload() {
+    if (this.cancelers.length > 0) {
+      for (const canceler of this.cancelers) {
+        canceler();
+      }
+    }
   }
 
   isFileExists() {

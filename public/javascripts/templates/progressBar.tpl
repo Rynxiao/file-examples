@@ -20,11 +20,11 @@
           <div
                   style="width: 0;"
                   class="shadow-none h-full flex-col text-center whitespace-nowrap text-white justify-center bg-emerald-500"
-                  id="progressBar{{checksum}}"
+                  id="progressBar{{id}}"
           ></div>
         </div>
         <div class="text-right ml-1">
-          <span id="percent{{checksum}}" class="text-xs font-semibold inline-block text-emerald-600">0%</span>
+          <span id="percent{{id}}" class="text-xs font-semibold inline-block text-emerald-600">0%</span>
         </div>
       </div>
     </div>
@@ -32,13 +32,13 @@
   <td class="px-6 py-4 whitespace-nowrap">
     <div class="relative pt-1">
       <div class="flex mb-2 items-center justify-end">
-        <span id="flag{{checksum}}" class="text-xs font-semibold inline-block py-1 px-2 uppercase rounded-full text-emerald-600 bg-emerald-200">
+        <span id="flag{{id}}" class="text-xs font-semibold inline-block py-1 px-2 uppercase rounded-full text-emerald-600 bg-emerald-200">
           task in progress
         </span>
       </div>
     </div>
   </td>
   <td class="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
-    <a id="cancel{{checksum}}" href="javascript: void(0);" class="ml-2 text-indigo-600 hover:text-indigo-900">Cancel</a>
+    <a id="cancel{{id}}" href="javascript: void(0);" class="ml-2 text-indigo-600 hover:text-indigo-900">Cancel</a>
   </td>
 </tr>

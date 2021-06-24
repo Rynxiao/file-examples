@@ -1,12 +1,22 @@
 const path = require('path');
 const fs = require('fs');
 const fsPromises = require('fs/promises');
+const multer = require('multer');
 const { Messages, logger, modules, actions } = require('../helpers');
 const uploadRepository = require('../repositories/uploadRepository');
 const chunkRepository = require('../repositories/chunkRepository');
 
 const uploadPath = path.join(__dirname, '..', '../public/uploads');
 const uploadTmp = path.join(uploadPath, 'tmp');
+
+const storage = multer.diskStorage({
+  destination: uploadTmp,
+  filename: (req, file, cb) => {
+    cb(null, file.fieldname);
+  },
+});
+
+const multerUpload = multer({ storage });
 
 const createFile = async (params) => {
   const { path, content, file, checksum, chunkId } = params;
@@ -63,15 +73,12 @@ const uploadService = {
   },
   uploadChunk: async (req, res) => {
     const file = req.files[0];
-    const destination = file.destination;
-    const path = file.path;
+    const chunkName = file.filename;
 
     try {
       const checksum = req.body.checksum;
       const chunkId = req.body.chunkId;
-      const chunkName = `${chunkId}.${checksum}.chunk`;
 
-      await fsPromises.rename(path, `${destination}/${chunkName}`);
       await chunkRepository.create({ name: chunkName, chunkId, checksum, completed: true });
 
       const message = Messages.success(modules.UPLOAD, actions.UPLOAD, chunkName);
@@ -182,4 +189,7 @@ const uploadService = {
   },
 };
 
-module.exports = uploadService;
+module.exports = {
+  multerUpload,
+  uploadService,
+};
