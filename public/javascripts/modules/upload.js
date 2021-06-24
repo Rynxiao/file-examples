@@ -1,6 +1,6 @@
 import $ from 'jquery';
 import axios from 'axios';
-import { fileStatus, uploadClasses } from '../constants';
+import { fileStatus, LIMITED_FILE_SIZE, uploadClasses } from '../constants';
 import { ID, checkSum } from '../utils';
 import progressBarTpl from '../templates/progressBar.tpl';
 
@@ -245,16 +245,21 @@ class Upload {
 
 $fileUpload.on('change', async (event) => {
   const file = event.target.files[0];
-  const { chunks, checksum } = await checkSum(file);
-  const upload = new Upload(checksum, chunks, file);
-  const exists = await upload.isFileExists();
 
-  // trigger onchange when choose same file
-  event.target.value = '';
-
-  if (!exists) {
-    await upload.uploadFile();
+  if (file.size > LIMITED_FILE_SIZE) {
+    console.error('file size greater than 50MB');
   } else {
-    upload.uploadFileInSecond();
+    const { chunks, checksum } = await checkSum(file);
+    const upload = new Upload(checksum, chunks, file);
+    const exists = await upload.isFileExists();
+
+    // trigger onchange when choose same file
+    event.target.value = '';
+
+    if (!exists) {
+      await upload.uploadFile();
+    } else {
+      upload.uploadFileInSecond();
+    }
   }
 });
