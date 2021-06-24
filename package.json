@@ -17,18 +17,21 @@
     "node": "16.x"
   },
   "dependencies": {
+    "axios": "^0.21.1",
     "cookie-parser": "~1.4.4",
     "debug": "~2.6.9",
     "ejs": "~2.6.1",
     "express": "~4.16.1",
     "http-errors": "~1.6.3",
+    "jquery": "^3.6.0",
     "less-middleware": "~2.2.1",
     "log4js": "^6.3.0",
     "morgan": "~1.9.1",
     "multer": "^1.4.2",
     "mysql2": "^2.2.5",
     "rotating-file-stream": "^2.1.5",
-    "sequelize": "^6.6.2"
+    "sequelize": "^6.6.2",
+    "spark-md5": "^3.0.0"
   },
   "devDependencies": {
     "@babel/core": "^7.14.6",
@@ -40,6 +43,7 @@
     "gulp-rename": "^2.0.0",
     "loader-utils": "^1.4.0",
     "prettier": "2.3.1",
+    "webpack": "^5.40.0",
     "webpack-cli": "^4.7.2"
   }
 }

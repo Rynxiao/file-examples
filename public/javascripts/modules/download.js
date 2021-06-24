@@ -1,3 +1,4 @@
+import $ from 'jquery';
 const $downloadBody = $('#downloadBody');
 
 const GET = (url) =>

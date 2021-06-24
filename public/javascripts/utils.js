@@ -1,3 +1,4 @@
+import SparkMD5 from 'spark-md5';
 import { CHUNK_SIZE } from './constants';
 
 export const ID = () => {

@@ -1,3 +1,5 @@
+import $ from 'jquery';
+import axios from 'axios';
 import { ID, checkSum } from '../utils';
 import progressBarTpl from '../templates/progressBar.tpl';
 

@@ -39,7 +39,6 @@
     </div>
   </td>
   <td class="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
-    <a id="pause{{checksum}}" href="javascript: void(0);" class="text-indigo-600 hover:text-indigo-900">Pause</a>
     <a id="cancel{{checksum}}" href="javascript: void(0);" class="ml-2 text-indigo-600 hover:text-indigo-900">Cancel</a>
   </td>
 </tr>
