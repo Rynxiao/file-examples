@@ -32,7 +32,7 @@
     "rotating-file-stream": "^2.1.5",
     "sequelize": "^6.6.2",
     "spark-md5": "^3.0.1",
-    "tailwind-toast": "^1.0.9"
+    "toastr": "^2.1.4"
   },
   "devDependencies": {
     "@babel/core": "^7.14.6",

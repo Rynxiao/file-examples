@@ -1,5 +1,6 @@
 import SparkMD5 from 'spark-md5';
 import { CHUNK_SIZE } from './constants';
+import toastr from 'toastr';
 
 export const ID = () => {
   // Math.random should be unique because of its seeding algorithm.
@@ -45,3 +46,11 @@ export const checkSum = (file, piece = CHUNK_SIZE) => {
     loadNext();
   });
 };
+
+toastr.options.closeButton = true;
+toastr.options.closeMethod = 'fadeOut';
+toastr.options.closeDuration = 300;
+toastr.options.closeEasing = 'swing';
+toastr.options.progressBar = true;
+toastr.options.positionClass = 'toast-bottom-left';
+export { toastr };

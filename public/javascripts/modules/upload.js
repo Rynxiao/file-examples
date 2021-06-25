@@ -1,8 +1,7 @@
 import $ from 'jquery';
 import axios from 'axios';
-import { toast } from 'tailwind-toast';
 import { fileStatus, LIMITED_FILE_SIZE, uploadClasses } from '../constants';
-import { ID, checkSum } from '../utils';
+import { ID, checkSum, toastr } from '../utils';
 import progressBarTpl from '../templates/progressBar.tpl';
 
 const $fileUpload = $('#fileUpload');
@@ -204,13 +203,13 @@ class Upload {
       const data = { chunks: this.chunks.length, filename, checksum: this.checksum };
       axios({ url: '/makefile', method: 'post', data })
         .then((res) => {
-          if (res.code === 200) {
-            toast().success('Success', `file ${filename} upload successfully!`).show();
+          if (res.data.code === 200) {
+            toastr.success(`file ${filename} upload successfully!`);
           }
         })
         .catch((err) => {
           console.error(err);
-          toast().danger('Failed', `file ${filename} upload failed!`).show();
+          toastr.error(`file ${filename} upload failed!`);
         });
     });
   }
@@ -232,16 +231,17 @@ class Upload {
         params: { targetFilename, sourceFilename, checksum: this.checksum },
       })
         .then((res) => {
-          if (res.code === 200) {
-            toast().success('Success', `file ${filename} upload successfully!`).show();
+          if (res.data.code === 200) {
+            toastr.success(`file ${filename} upload successfully!`);
           }
         })
         .catch((err) => {
           console.error(err);
-          toast().danger('Failed', `file ${filename} upload failed!`).show();
+          toastr.error(`file ${filename} upload failed!`);
         });
     } else {
       this._showProgress(id, 100, fileStatus.EXISTED);
+      toastr.success(`file ${filename} has existed`);
     }
   }
 }
@@ -253,7 +253,7 @@ $fileUpload.on('change', async (event) => {
   event.target.value = '';
 
   if (file.size > LIMITED_FILE_SIZE) {
-    toast().warning('Warning', 'file size greater than 50MB').show();
+    toastr.warning('file size greater than 50MB');
   } else {
     const { chunks, checksum } = await checkSum(file);
     const upload = new Upload(checksum, chunks, file);
