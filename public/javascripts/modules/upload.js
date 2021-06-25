@@ -180,6 +180,7 @@ class Upload {
         return res.data;
       })
       .catch((err) => {
+        console.error(`chunk ${this.checksum} - ${chunkId} canceled to upload.`);
         this._setCanceledProgress(this.checksum);
         axios
           .delete('/chunk/delete', { params: { checksum: this.checksum, chunkId } })

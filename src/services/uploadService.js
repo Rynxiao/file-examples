@@ -79,7 +79,7 @@ const uploadService = {
       const checksum = req.body.checksum;
       const chunkId = req.body.chunkId;
 
-      // await chunkRepository.create({ name: chunkName, chunkId, checksum, completed: true });
+      await chunkRepository.create({ name: chunkName, chunkId, checksum, completed: true });
 
       const message = Messages.success(modules.UPLOAD, actions.UPLOAD, chunkName);
       logger.info(message);
@@ -121,12 +121,15 @@ const uploadService = {
         }
       }
     } catch (err) {
-      await fsPromises.unlink(path);
-
-      const message = Messages.fail(modules.UPLOAD, actions.UPLOAD, err.message);
-      logger.info(message);
-      res.json({ code: 500, message });
-      res.status(500);
+      try {
+        await fsPromises.access(path);
+        await fsPromises.unlink(path);
+      } catch (err) {
+        const message = Messages.fail(modules.UPLOAD, actions.UPLOAD, err.message);
+        logger.info(message);
+        res.json({ code: 500, message });
+        res.status(500);
+      }
     }
   },
   copyFile: async (req, res) => {
