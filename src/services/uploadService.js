@@ -79,7 +79,7 @@ const uploadService = {
       const checksum = req.body.checksum;
       const chunkId = req.body.chunkId;
 
-      await chunkRepository.create({ name: chunkName, chunkId, checksum, completed: true });
+      // await chunkRepository.create({ name: chunkName, chunkId, checksum, completed: true });
 
       const message = Messages.success(modules.UPLOAD, actions.UPLOAD, chunkName);
       logger.info(message);

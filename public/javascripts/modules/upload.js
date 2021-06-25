@@ -17,6 +17,33 @@ class Upload {
     this.serverFiles = [];
     this.cancelers = [];
     this.progresses = Array(this.chunks.length).fill(0);
+    this.status = fileStatus.UPLOADING;
+  }
+
+  _addEvents() {
+    // click cancel button
+    $('#progressBarBody .cancel').on('click', (event) => {
+      const $this = $(event.target);
+      $this.removeClass('visible').addClass('invisible');
+      $this.next('.resume').removeClass('invisible').addClass('visible');
+
+      this.status = fileStatus.CANCELED;
+      if (this.cancelers.length > 0) {
+        for (const canceler of this.cancelers) {
+          canceler();
+        }
+      }
+    });
+
+    // click resume button
+    $('#progressBarBody .resume').on('click', async (event) => {
+      const $this = $(event.target);
+      $this.removeClass('visible').addClass('invisible');
+      $this.prev('.cancel').removeClass('invisible').addClass('visible');
+
+      this.status = fileStatus.UPLOADING;
+      await this.uploadFile();
+    });
   }
 
   _getCurrentLoaded() {
@@ -26,30 +53,66 @@ class Upload {
     }, 0);
   }
 
-  _setProgressBar(status, id) {
+  _setDoneProgress(id, text) {
     const $progressBar = $(`#progressBar${id}`);
-    const $progressBarOuter = $progressBar.parent('div');
     const $percent = $(`#percent${id}`);
     const $flag = $(`#flag${id}`);
-    if (status === fileStatus.UPLOADING) {
+    const $cancel = $(`#cancel${id}`);
+
+    $percent.text('100%');
+    $progressBar.css('width', '100%');
+    $flag.text(text);
+    $cancel.removeClass('visible').addClass('invisible');
+  }
+
+  // fileStatus: UPLOADING/EXISTED/DONE IN SECOND
+  _setUploadingProgress(id, percent) {
+    // Sometimes, will still receive data which will change the progressBar when click the cancel button
+    if (this.status === fileStatus.UPLOADING) {
+      const $progressBar = $(`#progressBar${id}`);
+      const $progressBarOuter = $progressBar.parent('div');
+      const $percent = $(`#percent${id}`);
+      const $flag = $(`#flag${id}`);
+      const $cancel = $(`#cancel${id}`);
+      // for some reason, progressEvent.loaded bytes will greater than file size
+      const isUploadChunkDone = Number(percent) >= 100;
+      // 1% to make file
+      const ratio = isUploadChunkDone ? 99 : percent;
+
       const addUploadingClass = ($ele, className) => {
         if (!$ele.hasClass(uploadClasses.UPLOADING[className])) {
           $ele.removeClass(uploadClasses.CANCELED[className]);
           $ele.addClass(uploadClasses.UPLOADING[className]);
         }
       };
+      $progressBar.css('width', `${ratio}%`);
+      $percent.text(`${ratio}%`);
+      $flag.text(fileStatus.UPLOADING);
       addUploadingClass($progressBarOuter, 'progressBarOuter');
       addUploadingClass($progressBar, 'progressBarInner');
       addUploadingClass($percent, 'percent');
       addUploadingClass($flag, 'flag');
-      $flag.text(fileStatus.UPLOADING);
-    } else if (status === fileStatus.CANCELED) {
+
+      if (isUploadChunkDone) {
+        $flag.text(fileStatus.MAKE_FILE);
+      }
+    }
+  }
+
+  _setCanceledProgress(id) {
+    if (this.status === fileStatus.CANCELED) {
+      const $progressBar = $(`#progressBar${id}`);
+      const $progressBarOuter = $progressBar.parent('div');
+      const $percent = $(`#percent${id}`);
+      const $flag = $(`#flag${id}`);
+
       const addCanceledClass = ($ele, className) => {
         if (!$ele.hasClass(uploadClasses.CANCELED[className])) {
           $ele.removeClass(uploadClasses.UPLOADING[className]);
           $ele.addClass(uploadClasses.CANCELED[className]);
         }
       };
+      $flag.text(fileStatus.CANCELED);
       addCanceledClass($progressBarOuter, 'progressBarOuter');
       addCanceledClass($progressBar, 'progressBarInner');
       addCanceledClass($percent, 'percent');
@@ -57,53 +120,13 @@ class Upload {
     }
   }
 
-  _showProgress(id, percent, text = fileStatus.DONE) {
-    // for some reason, progressEvent.loaded bytes will greater than file size
-    const isUploadChunkDone = Number(percent) >= 100;
-
-    // 1% to make file
-    const ratio = isUploadChunkDone ? 99 : percent;
-    this._setProgressBar(fileStatus.UPLOADING, id);
-    $(`#progressBar${id}`).css('width', `${ratio}%`);
-    $(`#percent${id}`).text(`${ratio}%`);
-    if (isUploadChunkDone) {
-      $(`#flag${id}`).text(fileStatus.MAKE_FILE);
-      $(`#cancel${id}`).hide();
-    }
-  }
-
-  _uploadDone(id) {
-    $(`#percent${id}`).text('100%');
-    $(`#progressBar${id}`).css('width', '100%');
-    $(`#flag${id}`).text(fileStatus.DONE);
-  }
-
-  _cancelProgress(id) {
-    $(`#flag${id}`).text('canceled');
-    this._setProgressBar(fileStatus.CANCELED, id);
-  }
-
   _renderProgressBar(id) {
     const filename = this.file.name;
+    // if html of progress bar is not exists, then render it
     if (!$(`#progressBar${id}`).length) {
-      // if html of progress bar is not exists, then render it
       const html = progressBarTpl.replace(/\{\{\s*name\s*\}\}/g, filename).replace(/\{\{\s*id\s*\}\}/g, id);
       $progressBarBody.append($(html));
-
-      // bind cancel event
-      const $cancel = $(`#cancel${id}`);
-      $cancel.on('click', async () => {
-        const status = $cancel.data('status');
-        if (status === 'cancel') {
-          $cancel.data('status', 'resume');
-          $cancel.text('Resume');
-          this.cancelUpload();
-        } else {
-          $cancel.data('status', 'cancel');
-          $cancel.text('Cancel');
-          await this.uploadFile();
-        }
-      });
+      this._addEvents();
 
       if ($emptyArea.length > 0) {
         $emptyArea.remove();
@@ -143,7 +166,7 @@ class Upload {
         this.progresses[chunkId] = loaded >= chunkProgress ? loaded : chunkProgress;
 
         const percent = ((this._getCurrentLoaded(this.progresses) / this.file.size) * 100).toFixed(0);
-        this._showProgress(this.checksum, percent);
+        this._setUploadingProgress(this.checksum, percent);
       },
       cancelToken: new CancelToken((c) => {
         // An executor function receives a cancel function as a parameter
@@ -156,8 +179,8 @@ class Upload {
         this.cancelers.splice(cancelerIndex, 1);
         return res.data;
       })
-      .catch(() => {
-        this._cancelProgress(this.checksum);
+      .catch((err) => {
+        this._setCanceledProgress(this.checksum);
         axios
           .delete('/chunk/delete', { params: { checksum: this.checksum, chunkId } })
           .then((res) => res.data)
@@ -165,14 +188,6 @@ class Upload {
             console.error(`delete chunk ${this.checksum} - ${chunkId} error`, err);
           });
       });
-  }
-
-  cancelUpload() {
-    if (this.cancelers.length > 0) {
-      for (const canceler of this.cancelers) {
-        canceler();
-      }
-    }
   }
 
   isFileExists() {
@@ -195,6 +210,7 @@ class Upload {
     const filename = this.file.name;
     const tasks = [];
     this._renderProgressBar(this.checksum);
+    this.status = fileStatus.UPLOADING;
 
     for (let chunkId = 0; chunkId < this.chunks.length; chunkId++) {
       const chunk = this.chunks[chunkId];
@@ -212,7 +228,7 @@ class Upload {
       axios({ url: '/makefile', method: 'post', data })
         .then((res) => {
           if (res.data.code === 200) {
-            this._uploadDone(this.checksum);
+            this._setDoneProgress(this.checksum, fileStatus.DONE);
             toastr.success(`file ${filename} upload successfully!`);
           }
         })
@@ -233,7 +249,7 @@ class Upload {
       const sourceFilename = names[0];
       const targetFilename = filename;
 
-      this._showProgress(id, 100, fileStatus.DONE_IN_SECOND);
+      this._setDoneProgress(id, fileStatus.DONE_IN_SECOND);
       axios({
         url: '/copyfile',
         method: 'get',
@@ -249,7 +265,7 @@ class Upload {
           toastr.error(`file ${filename} upload failed!`);
         });
     } else {
-      this._showProgress(id, 100, fileStatus.EXISTED);
+      this._setDoneProgress(id, fileStatus.EXISTED);
       toastr.success(`file ${filename} has existed`);
     }
   }
