@@ -1,5 +1,6 @@
 import $ from 'jquery';
 import axios from 'axios';
+import { toast } from 'tailwind-toast';
 import { fileStatus, LIMITED_FILE_SIZE, uploadClasses } from '../constants';
 import { ID, checkSum } from '../utils';
 import progressBarTpl from '../templates/progressBar.tpl';
@@ -204,11 +205,12 @@ class Upload {
       axios({ url: '/makefile', method: 'post', data })
         .then((res) => {
           if (res.code === 200) {
-            console.log(`file ${filename} upload successfully!`);
+            toast().success('Success', `file ${filename} upload successfully!`).show();
           }
         })
         .catch((err) => {
-          console.error(`file ${filename} upload error`, err);
+          console.error(err);
+          toast().danger('Failed', `file ${filename} upload failed!`).show();
         });
     });
   }
@@ -231,11 +233,12 @@ class Upload {
       })
         .then((res) => {
           if (res.code === 200) {
-            console.log(`file ${filename} upload successfully!`);
+            toast().success('Success', `file ${filename} upload successfully!`).show();
           }
         })
         .catch((err) => {
-          console.error(`file ${filename} upload error`, err);
+          console.error(err);
+          toast().danger('Failed', `file ${filename} upload failed!`).show();
         });
     } else {
       this._showProgress(id, 100, fileStatus.EXISTED);
@@ -246,15 +249,15 @@ class Upload {
 $fileUpload.on('change', async (event) => {
   const file = event.target.files[0];
 
+  // trigger onchange when choose same file
+  event.target.value = '';
+
   if (file.size > LIMITED_FILE_SIZE) {
-    console.error('file size greater than 50MB');
+    toast().warning('Warning', 'file size greater than 50MB').show();
   } else {
     const { chunks, checksum } = await checkSum(file);
     const upload = new Upload(checksum, chunks, file);
     const exists = await upload.isFileExists();
-
-    // trigger onchange when choose same file
-    event.target.value = '';
 
     if (!exists) {
       await upload.uploadFile();

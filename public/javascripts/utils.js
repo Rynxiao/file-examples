@@ -12,13 +12,14 @@ export const checkSum = (file, piece = CHUNK_SIZE) => {
   return new Promise((resolve, reject) => {
     let totalSize = file.size;
     let start = 0;
+    const blobSlice = File.prototype.slice || File.prototype.mozSlice || File.prototype.webkitSlice;
     const chunks = [];
     const spark = new SparkMD5.ArrayBuffer();
     const fileReader = new FileReader();
 
     const loadNext = () => {
-      const end = start + piece;
-      const chunk = file.slice(start, end);
+      const end = start + piece >= totalSize ? totalSize : start + piece;
+      const chunk = blobSlice.call(file, start, end);
 
       start = end;
       chunks.push(chunk);
@@ -26,10 +27,9 @@ export const checkSum = (file, piece = CHUNK_SIZE) => {
     };
 
     fileReader.onload = (event) => {
-      const buffer = event.target.result;
+      spark.append(event.target.result);
 
       if (start < totalSize) {
-        spark.append(buffer);
         loadNext();
       } else {
         const checksum = spark.end();
