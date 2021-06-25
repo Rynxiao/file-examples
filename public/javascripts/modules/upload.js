@@ -3,6 +3,7 @@ import axios from 'axios';
 import { fileStatus, LIMITED_FILE_SIZE, uploadClasses } from '../constants';
 import { ID, checkSum, toastr } from '../utils';
 import progressBarTpl from '../templates/progressBar.tpl';
+import chunkProgressBarTpl from '../templates/chunkProgressBar.tpl';
 
 const $fileUpload = $('#fileUpload');
 const $progressBarBody = $('#progressBarBody');
@@ -65,12 +66,12 @@ class Upload {
     $cancel.removeClass('visible').addClass('invisible');
   }
 
-  // fileStatus: UPLOADING/EXISTED/DONE IN SECOND
   _setUploadingProgress(id, percent) {
     // Sometimes, will still receive data which will change the progressBar when click the cancel button
     if (this.status === fileStatus.UPLOADING) {
       const $progressBar = $(`#progressBar${id}`);
       const $progressBarOuter = $progressBar.parent('div');
+      const $chunkProgressBar = $(`#chunkProgressBar${id}`);
       const $percent = $(`#percent${id}`);
       const $flag = $(`#flag${id}`);
       const $cancel = $(`#cancel${id}`);
@@ -88,6 +89,7 @@ class Upload {
       $progressBar.css('width', `${ratio}%`);
       $percent.text(`${ratio}%`);
       $flag.text(fileStatus.UPLOADING);
+      addUploadingClass($chunkProgressBar.children('.chunkProgress'), 'chunkProgress');
       addUploadingClass($progressBarOuter, 'progressBarOuter');
       addUploadingClass($progressBar, 'progressBarInner');
       addUploadingClass($percent, 'percent');
@@ -103,6 +105,7 @@ class Upload {
     if (this.status === fileStatus.CANCELED) {
       const $progressBar = $(`#progressBar${id}`);
       const $progressBarOuter = $progressBar.parent('div');
+      const $chunkProgressBar = $(`#chunkProgressBar${id}`);
       const $percent = $(`#percent${id}`);
       const $flag = $(`#flag${id}`);
 
@@ -113,11 +116,17 @@ class Upload {
         }
       };
       $flag.text(fileStatus.CANCELED);
+      addCanceledClass($chunkProgressBar.children('.chunkProgress'), 'chunkProgress');
       addCanceledClass($progressBarOuter, 'progressBarOuter');
       addCanceledClass($progressBar, 'progressBarInner');
       addCanceledClass($percent, 'percent');
       addCanceledClass($flag, 'flag');
     }
+  }
+
+  _setUploadingChunkProgress(id, chunkId, percent) {
+    const $chunkProgress = $(`#chunkProgress_${id}_${chunkId}`);
+    $chunkProgress.css('width', `${percent}%`);
   }
 
   _renderProgressBar(id) {
@@ -131,6 +140,15 @@ class Upload {
       if ($emptyArea.length > 0) {
         $emptyArea.remove();
       }
+    }
+  }
+
+  _renderChunkProgressBar(id, chunkId) {
+    const $chunkProgressBar = $(`#chunkProgressBar${id}`);
+    const tpl = chunkProgressBarTpl.replace(/\{\{id\}\}/g, id).replace(/\{\{chunkId\}\}/g, chunkId);
+    const $chunkProgress = $(`#chunkProgress_${id}_${chunkId}`);
+    if (!$chunkProgress.length) {
+      $chunkProgressBar.append($(tpl));
     }
   }
 
@@ -163,10 +181,12 @@ class Upload {
       onUploadProgress: (progressEvent) => {
         const chunkProgress = this.progresses[chunkId];
         const loaded = progressEvent.loaded;
+        const chunkPercent = ((loaded / progressEvent.total) * 100).toFixed(0);
         this.progresses[chunkId] = loaded >= chunkProgress ? loaded : chunkProgress;
-
         const percent = ((this._getCurrentLoaded(this.progresses) / this.file.size) * 100).toFixed(0);
+
         this._setUploadingProgress(this.checksum, percent);
+        this._setUploadingChunkProgress(this.checksum, chunkId, chunkPercent);
       },
       cancelToken: new CancelToken((c) => {
         // An executor function receives a cancel function as a parameter
@@ -214,6 +234,7 @@ class Upload {
     this.status = fileStatus.UPLOADING;
 
     for (let chunkId = 0; chunkId < this.chunks.length; chunkId++) {
+      this._renderChunkProgressBar(this.checksum, chunkId);
       const chunk = this.chunks[chunkId];
       const chunkExists = await this._isChunkExists(chunkId);
       if (!chunkExists) {

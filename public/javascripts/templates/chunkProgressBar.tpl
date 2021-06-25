@@ -1,0 +1,1 @@
+<div id="chunkProgress_{{id}}_{{chunkId}}" style="width: 0;" class="chunkProgress border border-green-500 border-solid mb-0.5"></div>

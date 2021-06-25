@@ -14,6 +14,9 @@
     </div>
   </td>
   <td class="px-6 py-4 whitespace-nowrap">
+    <div class="relative pt-1" id="chunkProgressBar{{id}}"></div>
+  </td>
+  <td class="px-6 py-4 whitespace-nowrap">
     <div class="relative pt-1">
       <div class="flex mb-2 items-center justify-between">
         <div class="progressBarOuter overflow-hidden h-2 text-xs flex-grow rounded bg-emerald-200">
