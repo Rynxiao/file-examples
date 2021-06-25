@@ -59,15 +59,23 @@ class Upload {
 
   _showProgress(id, percent, text = fileStatus.DONE) {
     // for some reason, progressEvent.loaded bytes will greater than file size
-    const isDone = Number(percent) >= 100;
-    const ratio = isDone ? 100 : percent;
+    const isUploadChunkDone = Number(percent) >= 100;
+
+    // 1% to make file
+    const ratio = isUploadChunkDone ? 99 : percent;
     this._setProgressBar(fileStatus.UPLOADING, id);
     $(`#progressBar${id}`).css('width', `${ratio}%`);
     $(`#percent${id}`).text(`${ratio}%`);
-    if (isDone) {
-      $(`#flag${id}`).text(text);
+    if (isUploadChunkDone) {
+      $(`#flag${id}`).text(fileStatus.MAKE_FILE);
       $(`#cancel${id}`).hide();
     }
+  }
+
+  _uploadDone(id) {
+    $(`#percent${id}`).text('100%');
+    $(`#progressBar${id}`).css('width', '100%');
+    $(`#flag${id}`).text(fileStatus.DONE);
   }
 
   _cancelProgress(id) {
@@ -204,6 +212,7 @@ class Upload {
       axios({ url: '/makefile', method: 'post', data })
         .then((res) => {
           if (res.data.code === 200) {
+            this._uploadDone(this.checksum);
             toastr.success(`file ${filename} upload successfully!`);
           }
         })

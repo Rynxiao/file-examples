@@ -4,6 +4,7 @@ export const LIMITED_FILE_SIZE = 1024 * 1024 * 50;
 export const fileStatus = {
   UPLOADING: 'Task In Progress',
   DONE: 'Done',
+  MAKE_FILE: 'Making File...',
   FILE_IN_SERVER: 'File In Server',
   EXISTED: 'Existed',
   CANCELED: 'Canceled',
