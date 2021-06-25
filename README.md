@@ -3,6 +3,8 @@
 - File Upload
 - File Download
 
+🤮🤮🤮 **I don't want to write template code with jquery anymore.**
+
 ### Tech Stack
 - node
 - express
