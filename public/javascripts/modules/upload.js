@@ -195,8 +195,7 @@ class Upload {
       }),
     })
       .then((res) => res.data)
-      .catch((err) => {
-        console.error(`chunk ${this.checksum} - ${chunkId} canceled to upload.`, err);
+      .catch(() => {
         this._setCanceledProgress(this.checksum);
         axios
           .delete('/chunk/delete', { params: { checksum: this.checksum, chunkId } })
@@ -240,6 +239,8 @@ class Upload {
         const task = this._chunkUploadTask({ chunk, chunkId });
         tasks.push(task);
       } else {
+        // if chunk is existed, need to set the with of chunk progress bar
+        this._setUploadingChunkProgress(this.checksum, chunkId, 100);
         this.progresses[chunkId] = chunk.size;
       }
     }
