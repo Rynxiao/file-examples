@@ -2,22 +2,20 @@
 
 - File Upload
 
-**upload by chunk**
-![upload](./docs/upload.gif)
+    **upload by chunk**
+    ![upload](./docs/upload.gif)
 
-**upload in second**
-![upload in second](./docs/upload2.gif)
+    **upload in second**
+    ![upload in second](./docs/upload2.gif)
 
 - File Download
-
-🤮🤮🤮 **I don't want to write template code with jquery anymore.**
 
 ### Tech Stack
 - node
 - express
 - sequelize
 - tailwind css
-- jquery
+- jquery [🤮🤮🤮 **I don't want to write template code with jquery anymore.**]
 - ejs
 - webpack
 - docker
