@@ -1,6 +1,13 @@
 ## File Examples
 
 - File Upload
+
+**upload by chunk**
+![upload](./docs/upload.gif)
+
+**upload in second**
+![upload in second](./docs/upload2.gif)
+
 - File Download
 
 🤮🤮🤮 **I don't want to write template code with jquery anymore.**
