@@ -14,7 +14,7 @@
     </div>
   </td>
   <td class="px-6 py-4 whitespace-nowrap">
-    <div class="relative pt-1" id="chunkProgressBar{{id}}">None</div>
+    <div class="relative pt-1" id="chunkProgressBar{{id}}"></div>
   </td>
   <td class="px-6 py-4 whitespace-nowrap">
     <div class="relative pt-1">
