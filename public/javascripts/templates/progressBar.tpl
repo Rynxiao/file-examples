@@ -42,7 +42,7 @@
     </div>
   </td>
   <td class="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
-    <a id="cancel{{id}}" href="javascript: void(0);" class="cancel visible ml-2 text-indigo-600 hover:text-indigo-900">Cancel</a>
-    <a id="resume{{id}}" href="javascript: void(0);" class="resume invisible ml-2 text-indigo-600 hover:text-indigo-900">Resume</a>
+    <a id="cancel{{id}}" href="javascript: void(0);" class="cancel ml-2 text-indigo-600 hover:text-indigo-900">Cancel</a>
+    <a id="resume{{id}}" href="javascript: void(0);" class="resume hidden ml-2 text-indigo-600 hover:text-indigo-900">Resume</a>
   </td>
 </tr>

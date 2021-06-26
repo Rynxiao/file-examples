@@ -1,4 +1,4 @@
-export const CHUNK_SIZE = 1024 * 1024 * 0.2;
+export const CHUNK_SIZE = 1024 * 1024 * 2;
 export const LIMITED_FILE_SIZE = 1024 * 1024 * 50;
 
 export const fileStatus = {
@@ -17,13 +17,13 @@ export const uploadClasses = {
     progressBarInner: 'bg-emerald-500',
     percent: 'text-emerald-600',
     flag: 'bg-emerald-200 text-emerald-600',
-    chunkProgress: 'border-green-500',
+    chunkProgress: 'bg-green-500',
   },
   CANCELED: {
     progressBarOuter: 'bg-pink-200',
     progressBarInner: 'bg-pink-500',
     percent: 'text-pink-600',
     flag: 'bg-pink-200 text-pink-600',
-    chunkProgress: 'border-pink-500',
+    chunkProgress: 'bg-pink-500',
   },
 };

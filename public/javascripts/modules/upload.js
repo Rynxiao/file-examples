@@ -1,7 +1,7 @@
 import $ from 'jquery';
 import axios from 'axios';
 import { fileStatus, LIMITED_FILE_SIZE, uploadClasses } from '../constants';
-import { ID, checkSum, toastr } from '../utils';
+import { ID, checkSum, toastr, asyncPool } from '../utils';
 import progressBarTpl from '../templates/progressBar.tpl';
 import chunkProgressBarTpl from '../templates/chunkProgressBar.tpl';
 
@@ -9,6 +9,7 @@ const $fileUpload = $('#fileUpload');
 const $progressBarBody = $('#progressBarBody');
 const $emptyArea = $('#emptyArea');
 const CancelToken = axios.CancelToken;
+const $dropzone = $('#dropzone');
 
 class Upload {
   constructor(checksum, chunks, file) {
@@ -21,12 +22,12 @@ class Upload {
     this.status = fileStatus.UPLOADING;
   }
 
-  _addEvents() {
+  _addEvents(id) {
     // click cancel button
-    $('#progressBarBody .cancel').on('click', (event) => {
+    $(`#cancel${id}`).on('click', (event) => {
       const $this = $(event.target);
-      $this.removeClass('visible').addClass('invisible');
-      $this.next('.resume').removeClass('invisible').addClass('visible');
+      $this.addClass('hidden');
+      $this.next('.resume').removeClass('hidden');
 
       this.status = fileStatus.CANCELED;
       if (this.cancelers.length > 0) {
@@ -37,10 +38,10 @@ class Upload {
     });
 
     // click resume button
-    $('#progressBarBody .resume').on('click', async (event) => {
+    $(`#resume${id}`).on('click', async (event) => {
       const $this = $(event.target);
-      $this.removeClass('visible').addClass('invisible');
-      $this.prev('.cancel').removeClass('invisible').addClass('visible');
+      $this.addClass('hidden');
+      $this.prev('.cancel').removeClass('hidden');
 
       this.status = fileStatus.UPLOADING;
       await this.uploadFile();
@@ -89,7 +90,7 @@ class Upload {
       $progressBar.css('width', `${ratio}%`);
       $percent.text(`${ratio}%`);
       $flag.text(fileStatus.UPLOADING);
-      addUploadingClass($chunkProgressBar.children('.chunkProgress'), 'chunkProgress');
+      addUploadingClass($chunkProgressBar.find('.chunkProgress'), 'chunkProgress');
       addUploadingClass($progressBarOuter, 'progressBarOuter');
       addUploadingClass($progressBar, 'progressBarInner');
       addUploadingClass($percent, 'percent');
@@ -102,6 +103,7 @@ class Upload {
   }
 
   _setCanceledProgress(id) {
+    console.log('cancel id', id);
     if (this.status === fileStatus.CANCELED) {
       const $progressBar = $(`#progressBar${id}`);
       const $progressBarOuter = $progressBar.parent('div');
@@ -116,7 +118,7 @@ class Upload {
         }
       };
       $flag.text(fileStatus.CANCELED);
-      addCanceledClass($chunkProgressBar.children('.chunkProgress'), 'chunkProgress');
+      addCanceledClass($chunkProgressBar.find('.chunkProgress'), 'chunkProgress');
       addCanceledClass($progressBarOuter, 'progressBarOuter');
       addCanceledClass($progressBar, 'progressBarInner');
       addCanceledClass($percent, 'percent');
@@ -135,7 +137,7 @@ class Upload {
     if (!$(`#progressBar${id}`).length) {
       const html = progressBarTpl.replace(/\{\{\s*name\s*\}\}/g, filename).replace(/\{\{\s*id\s*\}\}/g, id);
       $progressBarBody.append($(html));
-      this._addEvents();
+      this._addEvents(id);
 
       if ($emptyArea.length > 0) {
         $emptyArea.remove();
@@ -143,12 +145,14 @@ class Upload {
     }
   }
 
-  _renderChunkProgressBar(id, chunkId) {
-    const $chunkProgressBar = $(`#chunkProgressBar${id}`);
-    const tpl = chunkProgressBarTpl.replace(/\{\{id\}\}/g, id).replace(/\{\{chunkId\}\}/g, chunkId);
-    const $chunkProgress = $(`#chunkProgress_${id}_${chunkId}`);
-    if (!$chunkProgress.length) {
-      $chunkProgressBar.append($(tpl));
+  _renderChunkProgressBar(id, chunkSize) {
+    for (let chunkId = 0; chunkId < chunkSize; chunkId++) {
+      const $chunkProgressBar = $(`#chunkProgressBar${id}`);
+      const tpl = chunkProgressBarTpl.replace(/\{\{id\}\}/g, id).replace(/\{\{chunkId\}\}/g, chunkId);
+      const $chunkProgress = $(`#chunkProgress_${id}_${chunkId}`);
+      if (!$chunkProgress.length) {
+        $chunkProgressBar.append($(tpl));
+      }
     }
   }
 
@@ -231,10 +235,10 @@ class Upload {
     const filename = this.file.name;
     const tasks = [];
     this._renderProgressBar(this.checksum);
+    this._renderChunkProgressBar(this.checksum, this.chunks.length);
     this.status = fileStatus.UPLOADING;
 
     for (let chunkId = 0; chunkId < this.chunks.length; chunkId++) {
-      this._renderChunkProgressBar(this.checksum, chunkId);
       const chunk = this.chunks[chunkId];
       const chunkExists = await this._isChunkExists(chunkId);
       if (!chunkExists) {
@@ -245,20 +249,20 @@ class Upload {
       }
     }
 
-    Promise.all(tasks).then(() => {
-      const data = { chunks: this.chunks.length, filename, checksum: this.checksum };
-      axios({ url: '/makefile', method: 'post', data })
-        .then((res) => {
-          if (res.data.code === 200) {
-            this._setDoneProgress(this.checksum, fileStatus.DONE);
-            toastr.success(`file ${filename} upload successfully!`);
-          }
-        })
-        .catch((err) => {
-          console.error(err);
-          toastr.error(`file ${filename} upload failed!`);
-        });
-    });
+    // Promise.all(tasks).then(() => {
+    //   const data = { chunks: this.chunks.length, filename, checksum: this.checksum };
+    //   axios({ url: '/makefile', method: 'post', data })
+    //     .then((res) => {
+    //       if (res.data.code === 200) {
+    //         this._setDoneProgress(this.checksum, fileStatus.DONE);
+    //         toastr.success(`file ${filename} upload successfully!`);
+    //       }
+    //     })
+    //     .catch((err) => {
+    //       console.error(err);
+    //       toastr.error(`file ${filename} upload failed!`);
+    //     });
+    // });
   }
 
   uploadFileInSecond() {
@@ -293,12 +297,8 @@ class Upload {
   }
 }
 
-$fileUpload.on('change', async (event) => {
-  const file = event.target.files[0];
-
-  // trigger onchange when choose same file
-  event.target.value = '';
-
+const doUpload = async (file) => {
+  console.log(file);
   if (file.size > LIMITED_FILE_SIZE) {
     toastr.warning('file size greater than 50MB');
   } else {
@@ -312,4 +312,40 @@ $fileUpload.on('change', async (event) => {
       upload.uploadFileInSecond();
     }
   }
+};
+
+$fileUpload.on('change', async (event) => {
+  const file = event.target.files[0];
+
+  // trigger onchange when choose same file
+  event.target.value = '';
+
+  await doUpload(file);
+});
+
+$dropzone.on('drop', async (evt) => {
+  evt.preventDefault();
+  const event = evt.originalEvent;
+  let fileList = [];
+
+  if (event.dataTransfer.files) {
+    // Use DataTransfer interface to access the file(s)
+    fileList = event.dataTransfer.files;
+  } else {
+    const files = event.dataTransfer.items;
+    // Use DataTransferItemList interface to access the file(s)
+    for (let i = 0; i < files.length; i++) {
+      // If dropped items aren't files, reject them
+      if (files[i].kind === 'file') {
+        const file = files[i].getAsFile();
+        fileList = [...fileList, file];
+      }
+    }
+  }
+
+  await asyncPool(2, Array.from(fileList), doUpload);
+});
+
+$dropzone.on('dragover', async (event) => {
+  event.preventDefault();
 });
