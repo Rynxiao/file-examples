@@ -20,10 +20,6 @@ const attributes = {
     type: DataTypes.INTEGER,
     allowNull: false,
   },
-  completed: {
-    type: DataTypes.BOOLEAN,
-    defaultValue: false,
-  },
 };
 
 const options = {

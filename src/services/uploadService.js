@@ -23,13 +23,7 @@ const createFile = async (params) => {
   logger.info(Messages.info(modules.UPLOAD, actions.CREATE, path, `File ${path} not exists, `));
   await fsPromises.writeFile(path, content, { flag: 'w+' });
   await fsPromises.unlink(file);
-  await chunkRepository.update(
-    { completed: true },
-    {
-      chunkId,
-      checksum,
-    }
-  );
+  await chunkRepository.deleteBy({ chunkId, checksum });
   logger.info(Messages.success(modules.UPLOAD, actions.UPLOAD, `chunk ${file}`));
 };
 
@@ -37,13 +31,7 @@ const appendFile = async (params) => {
   const { path, content, file, checksum, chunkId } = params;
   await fsPromises.appendFile(path, content);
   await fsPromises.unlink(file);
-  await chunkRepository.update(
-    { completed: true },
-    {
-      chunkId,
-      checksum,
-    }
-  );
+  await chunkRepository.deleteBy({ chunkId, checksum });
   logger.info(Messages.success(modules.UPLOAD, actions.UPLOAD, `chunk ${file}`));
 };
 
@@ -79,7 +67,7 @@ const uploadService = {
       const checksum = req.body.checksum;
       const chunkId = req.body.chunkId;
 
-      await chunkRepository.create({ name: chunkName, chunkId, checksum, completed: true });
+      await chunkRepository.create({ name: chunkName, chunkId, checksum });
 
       const message = Messages.success(modules.UPLOAD, actions.UPLOAD, chunkName);
       logger.info(message);
@@ -149,32 +137,17 @@ const uploadService = {
       res.status(500);
     }
   },
-  chunkExist: async (req, res) => {
+  chunksExist: async (req, res) => {
     const checksum = req.query.checksum;
-    const chunkId = req.query.chunkId;
     try {
-      try {
-        const chunkPath = `${uploadTmp}/${chunkId}.${checksum}.chunk`;
-        await fsPromises.access(chunkPath, fs.constants.F_OK);
-
-        const chunk = await chunkRepository.findOne({ checksum, chunkId });
-        if (chunk) {
-          const message = Messages.success(modules.UPLOAD, actions.CHECK, `chunk ${chunk.id} exists`);
-          logger.info(message);
-          res.json({ code: 200, message: message, data: { id: chunk.id } });
-        } else {
-          const message = Messages.info(modules.UPLOAD, actions.CHECK, `chunk not exists`);
-          logger.info(message);
-          res.json({ code: 200, message: message, data: null });
-        }
-      } catch (err) {
-        // if chunk is not existed, but chunk info has save into db
-        // delete chunk info in db
-        await chunkRepository.deleteBy({ checksum, chunkId });
-        const message = Messages.info(modules.UPLOAD, actions.CHECK, `chunk not exists`);
-        logger.info(message);
-        res.json({ code: 200, message: message, data: null });
-      }
+      const chunks = await chunkRepository.findAllBy({ checksum });
+      const exists = chunks.reduce((cur, chunk) => {
+        cur[chunk.chunkId] = true;
+        return cur;
+      }, {});
+      const message = Messages.success(modules.UPLOAD, actions.CHECK, `chunk ${JSON.stringify(exists)} exists`);
+      logger.info(message);
+      res.json({ code: 200, message: message, data: exists });
     } catch (err) {
       const errMessage = Messages.fail(modules.UPLOAD, actions.CHECK, err);
       logger.error(errMessage);

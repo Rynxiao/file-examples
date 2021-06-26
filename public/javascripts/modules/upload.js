@@ -103,7 +103,6 @@ class Upload {
   }
 
   _setCanceledProgress(id) {
-    console.log('cancel id', id);
     if (this.status === fileStatus.CANCELED) {
       const $progressBar = $(`#progressBar${id}`);
       const $progressBarOuter = $progressBar.parent('div');
@@ -156,16 +155,13 @@ class Upload {
     }
   }
 
-  _isChunkExists(chunkId) {
-    const params = { checksum: this.checksum, chunkId };
+  _isChunksExists() {
+    const params = { checksum: this.checksum };
     return axios
-      .get('/chunk/exist', { params })
-      .then((res) => {
-        const data = res.data;
-        return data.code === 200 && data.data && !!data.data.id;
-      })
+      .get('/chunks/exist', { params })
+      .then((res) => res.data.data)
       .catch((err) => {
-        console.error(`check chunk exists ${checksum} - ${chunkId} error`, err);
+        console.error(`check chunks exists ${this.checksum} error`, err);
       });
   }
 
@@ -198,13 +194,9 @@ class Upload {
         this.cancelers.push(canceler);
       }),
     })
-      .then((res) => {
-        const cancelerIndex = this.cancelers.indexOf(canceler);
-        this.cancelers.splice(cancelerIndex, 1);
-        return res.data;
-      })
+      .then((res) => res.data)
       .catch((err) => {
-        console.error(`chunk ${this.checksum} - ${chunkId} canceled to upload.`);
+        console.error(`chunk ${this.checksum} - ${chunkId} canceled to upload.`, err);
         this._setCanceledProgress(this.checksum);
         axios
           .delete('/chunk/delete', { params: { checksum: this.checksum, chunkId } })
@@ -234,13 +226,16 @@ class Upload {
   async uploadFile() {
     const filename = this.file.name;
     const tasks = [];
+
     this._renderProgressBar(this.checksum);
     this._renderChunkProgressBar(this.checksum, this.chunks.length);
     this.status = fileStatus.UPLOADING;
 
+    const chunksExisted = await this._isChunksExists();
+
     for (let chunkId = 0; chunkId < this.chunks.length; chunkId++) {
       const chunk = this.chunks[chunkId];
-      const chunkExists = await this._isChunkExists(chunkId);
+      const chunkExists = chunksExisted[chunkId];
       if (!chunkExists) {
         const task = this._chunkUploadTask({ chunk, chunkId });
         tasks.push(task);
@@ -249,20 +244,28 @@ class Upload {
       }
     }
 
-    // Promise.all(tasks).then(() => {
-    //   const data = { chunks: this.chunks.length, filename, checksum: this.checksum };
-    //   axios({ url: '/makefile', method: 'post', data })
-    //     .then((res) => {
-    //       if (res.data.code === 200) {
-    //         this._setDoneProgress(this.checksum, fileStatus.DONE);
-    //         toastr.success(`file ${filename} upload successfully!`);
-    //       }
-    //     })
-    //     .catch((err) => {
-    //       console.error(err);
-    //       toastr.error(`file ${filename} upload failed!`);
-    //     });
-    // });
+    Promise.all(tasks).then(() => {
+      // when status in uploading, can send /makefile request
+      // if not, when status in canceled, send request will delete chunk which has uploaded.
+      if (this.status === fileStatus.UPLOADING) {
+        const data = { chunks: this.chunks.length, filename, checksum: this.checksum };
+        axios({
+          url: '/makefile',
+          method: 'post',
+          data,
+        })
+          .then((res) => {
+            if (res.data.code === 200) {
+              this._setDoneProgress(this.checksum, fileStatus.DONE);
+              toastr.success(`file ${filename} upload successfully!`);
+            }
+          })
+          .catch((err) => {
+            console.error(err);
+            toastr.error(`file ${filename} upload failed!`);
+          });
+      }
+    });
   }
 
   uploadFileInSecond() {
@@ -298,7 +301,6 @@ class Upload {
 }
 
 const doUpload = async (file) => {
-  console.log(file);
   if (file.size > LIMITED_FILE_SIZE) {
     toastr.warning('file size greater than 50MB');
   } else {

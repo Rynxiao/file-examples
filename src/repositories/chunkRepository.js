@@ -26,16 +26,11 @@ const chunkRepository = {
       throw err;
     }
   },
-  createOrUpdate: async (newChunk) => {
+  findAllBy: async (whereBy) => {
     try {
-      const chunk = await this.findOne({ checksum: newChunk.checksum, chunkId: newChunk.chunkId });
-      if (!chunk) {
-        await db.Chunk.create(newChunk);
-      } else {
-        await db.Chunk.update(newChunk);
-      }
+      return await db.Chunk.findAll({ where: whereBy });
     } catch (err) {
-      logger.error(Messages.fail(modules.DB, actions.CREATE_OR_UPDATE, err));
+      logger.error(Messages.fail(modules.DB, actions.GET, err));
       throw err;
     }
   },
